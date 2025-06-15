@@ -45,7 +45,7 @@ export const initiateGoogleOAuth = async () => {
   return Promise.resolve({ success: true });
 };
 
-// OAuth 토큰 조회
+// OAuth 토큰 조회 (자동 refresh 포함)
 export const getOAuthToken = async (provider: string) => {
   const { data, error } = await supabase
     .from("oauth_tokens")
@@ -57,7 +57,56 @@ export const getOAuthToken = async (provider: string) => {
     throw error;
   }
 
+  // 토큰 만료 확인 (5분 여유를 두고 체크)
+  const now = new Date();
+  const expiresAt = new Date(data.expires_at);
+  const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+
+  if (expiresAt <= fiveMinutesFromNow && data.refresh_token) {
+    // 토큰이 만료되었거나 곧 만료될 예정이면 refresh
+    try {
+      const refreshedToken = await refreshOAuthToken(
+        provider,
+        data.refresh_token,
+        data.user_id
+      );
+      return refreshedToken;
+    } catch (refreshError) {
+      console.error("토큰 갱신 실패:", refreshError);
+      throw new Error(
+        "토큰이 만료되었고 갱신에 실패했습니다. 다시 연결해주세요."
+      );
+    }
+  }
+
   return data;
+};
+
+// OAuth 토큰 갱신 (서버 API 호출)
+export const refreshOAuthToken = async (
+  provider: string,
+  refreshToken: string,
+  userId: string
+) => {
+  const response = await fetch("/api/oauth/refresh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      provider,
+      refreshToken,
+      userId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "토큰 갱신에 실패했습니다.");
+  }
+
+  const result = await response.json();
+  return result.data;
 };
 
 // Google Contacts API 호출
