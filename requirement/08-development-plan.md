@@ -1,269 +1,212 @@
 # 개발 계획 (Development Plan)
 
-## 1. 개발 단계 개요
+## 1. 프로젝트 개요
 
-### Phase 1: 기본 인프라 구축 (1-2주)
+### 1.1 개발 기간
 
-- 프로젝트 초기 설정
-- Supabase 설정 및 데이터베이스 구축
-- 기본 UI/UX 구현
+- **전체 기간**: 4주 (2024년 1월 - 2024년 2월)
+- **주요 마일스톤**: 매주 주요 기능 완성
 
-### Phase 2: 인증 시스템 구현 (1주)
+### 1.2 개발 환경
 
-- Supabase OAuth 로그인 구현
-- 사용자 세션 관리
-- 워크스페이스 기본 기능
+- **프론트엔드**: Vite + React 18 + TypeScript
+- **백엔드**: Supabase (PostgreSQL + Edge Functions)
+- **배포**: Vercel (프론트엔드) + Supabase (백엔드)
 
-### Phase 3: Google Contact 연동 (2-3주)
+## 2. 주차별 개발 계획
 
-- Google OAuth 인증
-- Notion OAuth 인증
-- 인증 결과 표시
+### Week 1: 기본 인프라 구축
 
-## 2. 세부 개발 일정
+**목표**: 프로젝트 초기 설정 및 기본 페이지 구현
 
-### Week 1: 프로젝트 설정 및 기본 구조
+**주요 작업:**
 
-**목표**: 개발 환경 구축 및 기본 페이지 생성
+- [x] 프로젝트 초기 설정 (Vite, React, TypeScript)
+- [x] Supabase 프로젝트 생성 및 설정
+- [x] 기본 라우팅 구조 설정
+- [x] 홈페이지 (소개 페이지) 구현
+- [x] 로그인 페이지 구현
+- [x] 워크스페이스 페이지 기본 구조
 
-**작업 항목**:
+**완성 기준:**
 
-- [ ] Vite + React 프로젝트 초기화
-- [ ] Supabase 프로젝트 생성 및 설정
-- [ ] React Router 설정 및 기본 라우팅 구조 설정 (/, /login, /workspace)
-- [ ] Tailwind CSS + Headless UI 설정 및 기본 컴포넌트 생성
-- [ ] 소개 페이지 UI 구현
-- [ ] 반응형 레이아웃 기본 틀 구성
+- 기본 페이지 간 네비게이션 작동
+- Supabase Auth 로그인 기능 작동
+- 반응형 UI 구현
 
-**완료 기준**:
+### Week 2: 데이터베이스 및 OAuth 기반 구조
 
-- 소개 페이지가 정상적으로 표시됨
-- 기본 네비게이션이 작동함
-- 모바일/데스크톱 반응형 확인
+**목표**: 데이터베이스 설계 및 OAuth 인증 시스템 구현
 
-### Week 2: 데이터베이스 및 인증 시스템
+**주요 작업:**
 
-**목표**: Supabase 데이터베이스 구축 및 기본 인증 구현
+- [x] 데이터베이스 스키마 생성 (oauth_tokens, sync_logs 테이블)
+- [x] Google OAuth 설정 및 Edge Function 구현
+- [x] Notion OAuth 설정 및 Edge Function 구현
+- [x] OAuth 토큰 관리 시스템 구현
+- [x] 기본 에러 처리 시스템
 
-**작업 항목**:
+**완성 기준:**
 
-- [ ] 데이터베이스 스키마 생성 (actions, oauth_tokens, action_logs 테이블)
-- [ ] RLS 정책 설정
-- [ ] Supabase Auth 설정
-- [ ] 로그인 페이지 UI 구현
-- [ ] 로그인/로그아웃 기능 구현
-- [ ] 인증 상태 관리 (Context API 또는 Zustand)
+- Google OAuth 로그인 성공
+- Notion OAuth 로그인 성공
+- 토큰 데이터베이스 저장 확인
 
-**완료 기준**:
+### Week 3: 서비스 연동 관리 기능
 
-- 사용자가 로그인/로그아웃 할 수 있음
-- 로그인 상태에 따른 페이지 접근 제어
-- 데이터베이스 연결 확인
+**목표**: 서비스 연동 상태 관리 및 동기화 기본 기능 구현
 
-### Week 3: 워크스페이스 구현
+**주요 작업:**
 
-**목표**: Actions 관리 기본 기능 구현
+- [ ] 서비스 연동 상태 표시 컴포넌트 개발
+- [ ] 서비스 연동 CRUD 기능
+- [ ] Google Contacts API 연동 함수 구현
+- [ ] 기본 동기화 로직 구현
 
-**작업 항목**:
+**완성 기준:**
 
-- [ ] 워크스페이스 페이지 UI 구현
-- [ ] Actions 테이블 컴포넌트 개발
-- [ ] Actions 데이터 CRUD 기능
-- [ ] "Add Action" 버튼 및 페이지 이동
-- [ ] Action Template 선택 페이지 UI
-- [ ] 실시간 데이터 업데이트 (Supabase Realtime)
+- 연동 상태가 정상적으로 표시됨
+- Google Contacts 데이터 조회 가능
+- 기본 동기화 기능 작동
 
-**완료 기준**:
+### Week 4: Google Contact 동기화 완성
 
-- Actions 테이블이 정상적으로 표시됨
-- 실시간 업데이트가 작동함
-- Action Template 선택 페이지 접근 가능
+**목표**: Google Contact 동기화 UI 및 기능 완성
 
-### Week 4: Google Contact Action 설정 페이지
+**주요 작업:**
 
-**목표**: Google Contact Action 설정 UI 구현
+- [ ] Google Contact 동기화 페이지 UI
+- [ ] 동기화 설정 및 실행 기능
+- [ ] 동기화 상태 모니터링
+- [ ] 동기화 로그 표시 기능
+- [ ] 에러 처리 및 사용자 피드백
 
-**작업 항목**:
+**완성 기준:**
 
-- [ ] Google Contact Action 설정 페이지 UI
-- [ ] Google OAuth 로그인 버튼 구현
-- [ ] Notion OAuth 로그인 버튼 구현
-- [ ] OAuth 상태 표시 컴포넌트
-- [ ] 인증 결과 표시 로직
-- [ ] 로딩 상태 및 에러 처리 UI
+- Google Contact 동기화 완전 작동
+- 사용자 친화적인 UI/UX
+- 안정적인 에러 처리
 
-**완료 기준**:
+## 3. 기술 스택별 상세 계획
 
-- 설정 페이지 UI가 완성됨
-- OAuth 버튼들이 정상적으로 표시됨
-- 상태 표시가 올바르게 작동함
+### 3.1 프론트엔드 (React)
 
-### Week 5-6: OAuth 인증 구현
+**주요 컴포넌트:**
 
-**목표**: Google 및 Notion OAuth 실제 연동
-
-**작업 항목**:
-
-- [ ] Google Cloud Console OAuth 앱 설정
-- [ ] Notion Integration 설정
-- [ ] Supabase Edge Functions 개발
-  - [ ] Google OAuth 콜백 처리
-  - [ ] Notion OAuth 콜백 처리
-- [ ] 프론트엔드 OAuth 플로우 구현
-- [ ] 토큰 저장 및 관리 로직
-- [ ] 인증 결과 사용자에게 표시
-
-**완료 기준**:
-
-- Google OAuth 로그인이 정상 작동함
-- Notion OAuth 로그인이 정상 작동함
-- 인증 결과가 사용자에게 명확하게 표시됨
-- 토큰이 안전하게 저장됨
-
-### Week 7: 더미 기능 및 마무리
-
-**목표**: Naver Map 더미 기능 및 전체 시스템 테스트
-
-**작업 항목**:
-
-- [ ] Naver Map Action Template 더미 구현
-- [ ] 전체 시스템 통합 테스트
-- [ ] UI/UX 개선 및 버그 수정
-- [ ] 성능 최적화
-- [ ] 에러 처리 강화
-- [ ] 문서화 완료
+- `HomePage`: 서비스 소개
+- `LoginPage`: 로그인 페이지
+- `WorkspacePage`: 메인 워크스페이스
+- `ServiceConnectionCard`: 서비스 연동 상태 카드
+- `SyncStatusMonitor`: 동기화 상태 모니터링
+- `SyncLogsList`: 동기화 로그 목록
 
-**완료 기준**:
+**상태 관리:**
 
-- 모든 기능이 요구사항에 맞게 작동함
-- 사용자 플로우가 원활함
-- 에러 처리가 적절히 구현됨
+- Context API 또는 Zustand 사용
+- OAuth 토큰 상태 관리
+- 동기화 상태 관리
 
-## 3. 기술 스택 상세
+### 3.2 백엔드 (Supabase)
 
-### 3.1 프론트엔드
+**데이터베이스 테이블:**
 
-```json
-{
-  "bundler": "Vite",
-  "dev-server": "Vite Dev Server",
-  "hot-reload": "Vite HMR",
-  "package-manager": "pnpm",
-  "framework": "React 18",
-  "language": "TypeScript",
-  "styling": "Tailwind CSS",
-  "ui-components": "Headless UI",
-  "routing": "React Router v6",
-  "http-client": "Supabase Client"
-}
-```
+- `profiles`: 사용자 프로필 (확장)
+- `oauth_tokens`: OAuth 토큰 저장
+- `sync_logs`: 동기화 로그
 
-### 3.2 백엔드
+**Edge Functions:**
 
-```json
-{
-  "platform": "Supabase",
-  "database": "PostgreSQL",
-  "auth": "Supabase Auth",
-  "functions": "Supabase Edge Functions (Deno)",
-  "realtime": "Supabase Realtime"
-}
-```
+- `google-oauth-callback`: Google OAuth 콜백 처리
+- `notion-oauth-callback`: Notion OAuth 콜백 처리
+- `sync-google-contacts`: Google Contacts 동기화 실행
 
-### 3.3 배포
+### 3.3 외부 API 연동
 
-```json
-{
-  "frontend": "Vercel",
-  "backend": "Supabase (자동 관리)",
-  "domain": "nocioun.kaonmir.com"
-}
-```
+**Google APIs:**
 
-## 4. 개발 환경 설정
+- Google OAuth 2.0
+- Google People API (Contacts)
 
-### 4.1 필수 환경변수
+**Notion API:**
 
-```bash
-# Supabase
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+- Notion OAuth
+- Notion Pages/Database API
 
-# Google OAuth
-VITE_GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=
+## 4. 테스트 계획
 
-# Notion OAuth
-VITE_NOTION_CLIENT_ID=
-NOTION_CLIENT_SECRET=
-NOTION_REDIRECT_URI=
-```
+### 4.1 단위 테스트
 
-### 4.2 개발 명령어
+- OAuth 토큰 관리 함수
+- 동기화 로직 함수
+- UI 컴포넌트 테스트
 
-```bash
-# 프로젝트 초기화
-pnpm create vite@latest nocioun --template react-ts
+### 4.2 통합 테스트
 
-# 의존성 설치
-pnpm install @supabase/supabase-js @headlessui/react @heroicons/react
+- Google OAuth 플로우
+- Notion OAuth 플로우
+- 전체 동기화 프로세스
 
-# 개발 의존성 설치
-pnpm install -D @types/react @types/react-dom tailwindcss postcss autoprefixer
+### 4.3 사용자 테스트
 
-# Tailwind CSS 초기화
-npx tailwindcss init -p
+- 실제 사용자 계정으로 동기화 테스트
+- 에러 상황 대응 테스트
 
-# 개발 서버 실행
-pnpm dev
+## 5. 배포 계획
 
-# Supabase 로컬 개발
-npx supabase start
-npx supabase db reset
-```
+### 5.1 개발 환경
 
-## 5. 테스트 계획
+- **Frontend**: Vercel Preview
+- **Backend**: Supabase Dev Project
 
-### 5.1 단위 테스트
+### 5.2 프로덕션 환경
 
-- [ ] OAuth 관련 유틸 함수
-- [ ] 데이터 변환 로직
-- [ ] API 호출 함수
+- **Domain**: nocioun.kaonmir.com
+- **Frontend**: Vercel
+- **Backend**: Supabase Production
 
-### 5.2 통합 테스트
+### 5.3 CI/CD
 
-- [ ] 사용자 인증 플로우
-- [ ] OAuth 인증 플로우
-- [ ] 데이터베이스 CRUD 작업
+- GitHub Actions 사용
+- 자동 테스트 및 배포
+- 환경변수 관리
 
-### 5.3 E2E 테스트
+## 6. 보안 고려사항
 
-- [ ] 전체 사용자 여정 테스트
-- [ ] 다양한 브라우저 호환성
-- [ ] 모바일 환경 테스트
+### 6.1 OAuth 토큰 보안
 
-## 6. 배포 전 체크리스트
+- 토큰 암호화 저장
+- 토큰 만료 시간 관리
+- Refresh Token 자동 갱신
 
-- [ ] 모든 환경변수 설정 완료
-- [ ] 프로덕션 데이터베이스 마이그레이션
-- [ ] OAuth 앱 프로덕션 도메인 설정
-- [ ] HTTPS 설정 확인
-- [ ] 성능 테스트 완료
-- [ ] 보안 검토 완료
-- [ ] 사용자 가이드 작성
+### 6.2 데이터 보안
 
-## 7. 향후 확장 계획
+- RLS 정책 적용
+- API 요청 검증
+- 사용자 데이터 분리
 
-### Phase 4: 실제 Google Contact 싱크 구현
+## 7. 성능 최적화
 
-- Google Contacts와 Notion 데이터베이스 실제 동기화
-- 스케줄링 및 자동 실행 기능
-- 동기화 설정 옵션
+### 7.1 프론트엔드
 
-### Phase 5: 추가 서비스 연동
+- 코드 스플리팅
+- 이미지 최적화
+- 캐싱 전략
 
-- Naver Map API 실제 구현
-- 다른 서비스 템플릿 추가 (Slack, Trello 등)
-- 커스텀 Action Template 생성 기능
+### 7.2 백엔드
+
+- 데이터베이스 인덱스 최적화
+- API 응답 시간 최적화
+- 동시 요청 처리
+
+## 8. 모니터링 및 로깅
+
+### 8.1 에러 모니터링
+
+- Supabase 로그 활용
+- 클라이언트 에러 추적
+
+### 8.2 성능 모니터링
+
+- API 응답 시간 측정
+- 동기화 성공률 추적
+- 사용자 활동 분석

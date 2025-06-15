@@ -11,13 +11,13 @@
 - 사용자가 다양한 외부 서비스(Google Contact, Naver Map 등)를 노션과 쉽게 연동할 수 있는 플랫폼 구축
 - OAuth 기반의 안전한 인증 시스템 제공
 - 사용자별 개인화된 워크스페이스 제공
-- 확장 가능한 Action Template 시스템 구축
+- Google Contacts와 Notion 간 자동 동기화 시스템 구축
 
 ## 주요 특징
 
 - Supabase 기반 백엔드 서버리스 아키텍처
 - OAuth 기반 멀티 서비스 인증
-- 실시간 Action 상태 모니터링
+- 실시간 동기화 상태 모니터링
 - 사용자 친화적인 인터페이스
 
 ## 개발 단계

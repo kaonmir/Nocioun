@@ -1,134 +1,103 @@
 # 사용자 스토리 (User Stories)
 
-## Epic 1: 사용자 온보딩
+## Epic 1: 사용자 인증 및 기본 인터페이스
 
-### US-001: 서비스 소개 확인
+### US-001: 홈페이지 방문
 
-**As a** 새로운 방문자  
+**As a** 방문자  
 **I want to** 서비스 소개 페이지를 보고  
-**So that** nocioun이 무엇인지 이해할 수 있다
+**So that** 서비스의 목적과 기능을 이해할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- 서비스의 주요 기능이 명확하게 설명되어 있다
-- 로그인 버튼이 눈에 잘 띄는 위치에 있다
-- 반응형 디자인으로 모바일에서도 잘 보인다
+- 서비스 제목과 설명이 명확하게 표시된다
+- 로그인 버튼이 명확하게 보인다
+- 깔끔하고 직관적인 디자인
 
-### US-002: 로그인하기
+### US-002: 로그인 후 워크스페이스 접근
 
-**As a** 서비스 사용자  
-**I want to** 간편하게 로그인하고  
-**So that** 내 개인 워크스페이스에 접근할 수 있다
+**As a** 사용자  
+**I want to** 로그인 후 개인 워크스페이스에 접근하고  
+**So that** 내가 설정한 서비스 연동 상태를 확인할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Supabase OAuth를 통해 로그인할 수 있다
-- 로그인 성공 시 자동으로 워크스페이스로 이동한다
-- 로그인 실패 시 명확한 오류 메시지를 볼 수 있다
+- 로그인 성공 시 `/workspace` 페이지로 이동
+- 워크스페이스에서 연동 상태를 확인할 수 있다
 
-## Epic 2: 워크스페이스 관리
+## Epic 2: 서비스 연동 관리
 
-### US-003: Actions 목록 보기
+### US-003: 연동 상태 보기
 
 **As a** 로그인한 사용자  
-**I want to** 내가 등록한 Actions을 한눈에 보고  
-**So that** 각 Action의 상태를 파악할 수 있다
+**I want to** 내가 연동한 서비스들을 한눈에 보고  
+**So that** 각 서비스의 연동 상태를 파악할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Actions 테이블에서 Action 이름을 볼 수 있다
-- 각 Action의 현재 상태를 볼 수 있다
-- 마지막 실행 시간을 확인할 수 있다
-- 테이블이 실시간으로 업데이트된다
+- 연동된 서비스 목록이 표시된다
+- 각 서비스의 연동 상태를 볼 수 있다
+- 마지막 동기화 시간을 확인할 수 있다
 
-### US-004: 새 Action 추가하기
-
-**As a** 로그인한 사용자  
-**I want to** "Add Action" 버튼을 클릭하고  
-**So that** 새로운 연동 서비스를 추가할 수 있다
-
-**Acceptance Criteria:**
-
-- "Add Action" 버튼이 명확하게 보인다
-- 클릭 시 Action Template 선택 페이지로 이동한다
-- 사용 가능한 템플릿 목록을 볼 수 있다
-
-## Epic 3: Action Template 선택
-
-### US-005: Action Template 목록 보기
+### US-004: 새 서비스 연동하기
 
 **As a** 사용자  
-**I want to** 사용 가능한 Action Template을 보고  
-**So that** 내가 원하는 연동 서비스를 선택할 수 있다
+**I want to** "서비스 연동" 버튼을 클릭하고  
+**So that** Google과 Notion 계정을 연결할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Google Contact 싱크 템플릿을 볼 수 있다
-- Naver Map 추가 템플릿을 볼 수 있다 (더미)
-- 각 템플릿의 설명이 명확하다
+- "서비스 연동" 버튼이 명확하게 보인다
+- 클릭 시 OAuth 로그인 페이지로 이동한다
 
-### US-006: Google Contact Action 설정하기
+## Epic 3: Google Contacts 동기화
 
-**As a** 사용자  
-**I want to** Google Contact 템플릿을 선택하고  
-**So that** Google 연락처와 Notion을 연동할 수 있다
-
-**Acceptance Criteria:**
-
-- Google Contact 템플릿 클릭 시 설정 페이지로 이동한다
-- Google OAuth 로그인 옵션을 볼 수 있다
-- Notion OAuth 로그인 옵션을 볼 수 있다
-
-## Epic 4: OAuth 인증
-
-### US-007: Google OAuth 로그인
+### US-005: Google Contacts 동기화 설정
 
 **As a** 사용자  
-**I want to** Google 계정으로 인증하고  
-**So that** Google Contacts에 접근할 수 있다
+**I want to** Google Contacts와 Notion을 연동하고  
+**So that** 연락처 정보를 Notion에서 관리할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Google OAuth 팝업이 정상적으로 열린다
-- 인증 성공 시 성공 메시지가 표시된다
-- 인증 실패 시 오류 메시지가 표시된다
-- 인증 결과가 사용자에게 명확하게 보여진다
+- Google OAuth 로그인이 성공적으로 작동한다
+- Notion OAuth 로그인이 성공적으로 작동한다
+- 연동 완료 메시지가 표시된다
 
-### US-008: Notion OAuth 로그인
-
-**As a** 사용자  
-**I want to** Notion 계정으로 인증하고  
-**So that** Notion 워크스페이스에 접근할 수 있다
-
-**Acceptance Criteria:**
-
-- Notion OAuth 팝업이 정상적으로 열린다
-- 인증 성공 시 성공 메시지가 표시된다
-- 인증 실패 시 오류 메시지가 표시된다
-- 인증 결과가 사용자에게 명확하게 보여진다
-
-### US-009: 인증 상태 확인하기
+### US-006: 수동 동기화 실행
 
 **As a** 사용자  
-**I want to** 각 서비스의 인증 상태를 확인하고  
-**So that** 연동이 제대로 되었는지 알 수 있다
+**I want to** "동기화 실행" 버튼을 클릭하고  
+**So that** Google Contacts 데이터를 Notion으로 동기화할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Google 인증 상태가 명확하게 표시된다
-- Notion 인증 상태가 명확하게 표시된다
-- 인증된 계정 정보가 표시된다 (이메일 등)
+- 동기화 버튼이 명확하게 보인다
+- 동기화 진행 상태가 표시된다
+- 동기화 완료 후 결과가 표시된다
 
-## Epic 5: 더미 기능
+## Epic 4: 실시간 모니터링
 
-### US-010: Naver Map 템플릿 확인
+### US-007: 동기화 상태 모니터링
 
 **As a** 사용자  
-**I want to** Naver Map 템플릿을 클릭하고  
-**So that** 향후 기능을 미리 확인할 수 있다
+**I want to** 동기화 진행 상황을 실시간으로 보고  
+**So that** 동기화 성공 여부를 즉시 확인할 수 있다
 
-**Acceptance Criteria:**
+**인수기준:**
 
-- Naver Map 템플릿이 목록에 표시된다
-- 클릭 시 "준비 중" 메시지가 표시된다
-- 사용자가 혼동하지 않도록 명확하게 안내된다
+- 동기화 상태가 실시간으로 업데이트된다
+- 성공/실패 상태가 명확하게 표시된다
+- 에러 발생 시 상세한 메시지가 표시된다
+
+### US-008: 동기화 이력 보기
+
+**As a** 사용자  
+**I want to** 과거 동기화 이력을 보고  
+**So that** 언제, 얼마나 많은 데이터가 동기화되었는지 확인할 수 있다
+
+**인수기준:**
+
+- 동기화 이력이 시간순으로 표시된다
+- 각 동기화의 성공/실패 상태가 표시된다
+- 동기화된 데이터 개수가 표시된다

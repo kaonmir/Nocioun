@@ -2,6 +2,11 @@ import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import type { Route } from "./+types/workspace";
 import { supabase } from "../lib/supabase";
+import {
+  initiateGoogleOAuth,
+  getOAuthToken,
+  getGoogleContacts,
+} from "../lib/oauth";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -27,6 +32,14 @@ interface ConnectionStatus {
   notion: boolean;
 }
 
+interface OAuthToken {
+  id: string;
+  provider: string;
+  access_token: string;
+  expires_at: string;
+  created_at: string;
+}
+
 export default function Workspace() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -39,10 +52,30 @@ export default function Workspace() {
     "idle" | "syncing" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState("");
+  const [contactsCount, setContactsCount] = useState(0);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      checkConnectionStatus();
+    }
+  }, [user]);
+
+  // 페이지가 다시 포커스될 때 연결 상태 확인 (OAuth 완료 후 돌아왔을 때)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        checkConnectionStatus();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [user]);
 
   const checkUser = async () => {
     try {
@@ -55,16 +88,49 @@ export default function Workspace() {
         return;
       }
       setUser(user);
-      // TODO: 실제 연결 상태 확인 로직
-      setConnections({
-        google: Math.random() > 0.5, // 임시 랜덤 상태
-        notion: Math.random() > 0.5, // 임시 랜덤 상태
-      });
     } catch (error) {
       console.error("User check error:", error);
       navigate("/login");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkConnectionStatus = async () => {
+    try {
+      // Google 연결 상태 확인
+      const googleToken = await getOAuthToken("google").catch(() => null);
+
+      // Notion 연결 상태 확인 (아직 구현되지 않음)
+      // const notionToken = await getOAuthToken("notion").catch(() => null);
+
+      const isGoogleConnected =
+        !!googleToken && new Date(googleToken.expires_at) > new Date();
+
+      setConnections({
+        google: isGoogleConnected,
+        notion: false, // TODO: 아직 구현되지 않음
+      });
+
+      // Google이 연결되어 있으면 연락처 수 가져오기
+      if (isGoogleConnected && googleToken) {
+        try {
+          const contacts = await getGoogleContacts(googleToken.access_token);
+          setContactsCount(contacts.length);
+        } catch (error) {
+          console.error("Failed to fetch contacts count:", error);
+          setContactsCount(0);
+        }
+      } else {
+        setContactsCount(0);
+      }
+    } catch (error) {
+      console.error("Connection status check error:", error);
+      setConnections({
+        google: false,
+        notion: false,
+      });
+      setContactsCount(0);
     }
   };
 
@@ -74,8 +140,65 @@ export default function Workspace() {
   };
 
   const handleConnectGoogle = async () => {
-    setMessage("Google 연결 기능을 준비 중입니다...");
-    // TODO: Google Contacts API 연동 구현
+    try {
+      setMessage(
+        "Google 인증 페이지를 새 탭에서 열었습니다. 인증을 완료해주세요."
+      );
+
+      // Google OAuth 플로우 시작 (새 탭에서)
+      await initiateGoogleOAuth();
+
+      // 메시지 5초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
+    } catch (error) {
+      console.error("Google OAuth Error:", error);
+      setMessage(
+        error instanceof Error
+          ? `Google 연결 실패: ${error.message}`
+          : "Google 연결 중 오류가 발생했습니다."
+      );
+
+      // 에러 메시지 5초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    try {
+      setMessage("Google 연결을 해제하는 중...");
+
+      // 데이터베이스에서 Google 토큰 삭제
+      const { error } = await supabase
+        .from("oauth_tokens")
+        .delete()
+        .eq("provider", "google");
+
+      if (error) {
+        throw error;
+      }
+
+      setMessage("Google 연결이 해제되었습니다.");
+
+      // 연결 상태 다시 확인
+      await checkConnectionStatus();
+
+      // 성공 메시지 3초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Google Disconnect Error:", error);
+      setMessage("Google 연결 해제 중 오류가 발생했습니다.");
+
+      // 에러 메시지 5초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
+    }
   };
 
   const handleConnectNotion = async () => {
@@ -84,19 +207,84 @@ export default function Workspace() {
   };
 
   const handleSync = async () => {
-    if (!connections.google || !connections.notion) {
-      setMessage("먼저 Google과 Notion을 모두 연결해주세요.");
+    if (!connections.google) {
+      setMessage("먼저 Google을 연결해주세요.");
       return;
     }
 
     setSyncStatus("syncing");
-    setMessage("동기화를 시작합니다...");
+    setMessage("Google Contacts 데이터를 가져오는 중...");
 
-    // TODO: 실제 동기화 로직 구현
-    setTimeout(() => {
+    try {
+      // Google 토큰 가져오기
+      const googleToken = await getOAuthToken("google");
+      if (!googleToken) {
+        throw new Error("Google 토큰을 찾을 수 없습니다.");
+      }
+
+      // Google Contacts 데이터 가져오기
+      const contacts = await getGoogleContacts(googleToken.access_token);
+
+      // 동기화 로그 저장
+      const { error: logError } = await supabase.from("sync_logs").insert({
+        provider: "google",
+        service_type: "contacts",
+        status: "success",
+        message: `${contacts.length}개의 연락처를 성공적으로 가져왔습니다.`,
+        synced_count: contacts.length,
+      });
+
+      if (logError) {
+        console.error("Failed to save sync log:", logError);
+      }
+
       setSyncStatus("success");
-      setMessage("동기화가 완료되었습니다!");
-    }, 3000);
+      setMessage(
+        `동기화가 완료되었습니다! ${contacts.length}개의 연락처를 가져왔습니다.`
+      );
+      setContactsCount(contacts.length);
+      setLastSyncTime(new Date().toLocaleString("ko-KR"));
+
+      // 성공 메시지 5초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+        setSyncStatus("idle");
+      }, 5000);
+    } catch (error) {
+      console.error("Sync error:", error);
+
+      // 동기화 실패 로그 저장
+      const { error: logError } = await supabase.from("sync_logs").insert({
+        provider: "google",
+        service_type: "contacts",
+        status: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "동기화 중 오류가 발생했습니다.",
+        error_details: {
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        synced_count: 0,
+      });
+
+      if (logError) {
+        console.error("Failed to save error log:", logError);
+      }
+
+      setSyncStatus("error");
+      setMessage(
+        error instanceof Error
+          ? `동기화 실패: ${error.message}`
+          : "동기화 중 오류가 발생했습니다."
+      );
+
+      // 에러 메시지 5초 후 클리어
+      setTimeout(() => {
+        setMessage("");
+        setSyncStatus("idle");
+      }, 5000);
+    }
   };
 
   if (loading) {
@@ -213,17 +401,37 @@ export default function Workspace() {
               Google Contacts에서 연락처를 가져와 Notion과 동기화합니다.
             </p>
 
-            <button
-              onClick={handleConnectGoogle}
-              disabled={connections.google}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                connections.google
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
-                  : "bg-blue-600 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              }`}
-            >
-              {connections.google ? "연결 완료" : "Google 연결하기"}
-            </button>
+            {connections.google ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="font-medium">연결 완료</span>
+                </div>
+                <button
+                  onClick={handleDisconnectGoogle}
+                  className="w-full py-2 px-4 rounded-lg font-medium text-red-600 border border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  연결 해제
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleConnectGoogle}
+                className="w-full py-3 px-4 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                Google 연결하기
+              </button>
+            )}
           </div>
 
           {/* Notion Card */}
@@ -288,25 +496,21 @@ export default function Workspace() {
 
           <button
             onClick={handleSync}
-            disabled={
-              !connections.google ||
-              !connections.notion ||
-              syncStatus === "syncing"
-            }
+            disabled={!connections.google || syncStatus === "syncing"}
             className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors ${
-              !connections.google ||
-              !connections.notion ||
-              syncStatus === "syncing"
+              !connections.google || syncStatus === "syncing"
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             }`}
           >
-            {syncStatus === "syncing" ? "동기화 중..." : "지금 동기화하기"}
+            {syncStatus === "syncing"
+              ? "동기화 중..."
+              : "Google Contacts 가져오기"}
           </button>
 
-          {(!connections.google || !connections.notion) && (
+          {!connections.google && (
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              동기화를 실행하려면 Google과 Notion을 모두 연결해주세요.
+              동기화를 실행하려면 먼저 Google을 연결해주세요.
             </p>
           )}
         </div>
@@ -315,26 +519,42 @@ export default function Workspace() {
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-              0
+              {contactsCount.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              총 연락처 수
+              Google Contacts 수
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-              0
+            <div className="text-lg font-bold text-green-600 dark:text-green-400 mb-2">
+              {lastSyncTime || "없음"}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
               마지막 동기화
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
-              0
+            <div
+              className={`text-2xl font-bold mb-2 ${
+                syncStatus === "success"
+                  ? "text-green-600 dark:text-green-400"
+                  : syncStatus === "error"
+                  ? "text-red-600 dark:text-red-400"
+                  : syncStatus === "syncing"
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              {syncStatus === "success"
+                ? "✓"
+                : syncStatus === "error"
+                ? "✗"
+                : syncStatus === "syncing"
+                ? "⟳"
+                : "—"}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              동기화 횟수
+              동기화 상태
             </div>
           </div>
         </div>

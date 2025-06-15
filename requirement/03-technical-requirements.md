@@ -43,15 +43,14 @@
 ### 3.1 데이터 모델
 
 - **TR-019**: 사용자 테이블 (users)
-- **TR-020**: Actions 테이블 (actions)
-- **TR-021**: OAuth 토큰 저장 테이블 (oauth_tokens)
-- **TR-022**: Action 실행 로그 테이블 (action_logs)
+- **TR-020**: OAuth 토큰 저장 테이블 (oauth_tokens)
+- **TR-021**: 동기화 로그 테이블 (sync_logs)
 
 ### 3.2 데이터베이스 관리
 
-- **TR-023**: Supabase 자동 백업 활용
-- **TR-024**: Row Level Security (RLS) 정책 적용
-- **TR-025**: 데이터베이스 마이그레이션 관리
+- **TR-022**: Supabase 자동 백업 활용
+- **TR-023**: Row Level Security (RLS) 정책 적용
+- **TR-024**: 데이터베이스 마이그레이션 관리
 
 ## 4. 외부 API 연동
 

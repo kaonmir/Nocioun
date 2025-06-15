@@ -19,12 +19,15 @@ type Pages = {
   "/workspace": {
     params: {};
   };
+  "/oauth/google/callback": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/workspace";
+    page: "/" | "/login" | "/workspace" | "/oauth/google/callback";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -37,5 +40,9 @@ type RouteFiles = {
   "routes/workspace.tsx": {
     id: "routes/workspace";
     page: "/workspace";
+  };
+  "routes/oauth.google.callback.tsx": {
+    id: "routes/oauth.google.callback";
+    page: "/oauth/google/callback";
   };
 };
