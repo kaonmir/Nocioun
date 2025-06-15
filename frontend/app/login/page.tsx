@@ -1,21 +1,12 @@
-import { Link, useNavigate } from "react-router";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import type { Route } from "./+types/login";
 import { supabase } from "../lib/supabase";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "로그인 - Nocioun" },
-    {
-      name: "description",
-      content:
-        "Google 또는 Notion 계정으로 로그인하여 연락처 동기화를 시작하세요.",
-    },
-  ];
-}
-
-export default function Login() {
-  const navigate = useNavigate();
+export default function LoginPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState<"google" | "notion" | null>(null);
   const [checking, setChecking] = useState(true);
   const [message, setMessage] = useState("");
@@ -32,7 +23,7 @@ export default function Login() {
       } = await supabase.auth.getUser();
       if (user && !error) {
         // 이미 로그인된 사용자는 워크스페이스로 리다이렉트
-        navigate("/workspace", { replace: true });
+        router.replace("/workspace");
         return;
       }
     } catch (error) {
@@ -93,7 +84,7 @@ export default function Login() {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-8">
+          <Link href="/" className="inline-flex items-center space-x-2 mb-8">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-xl">N</span>
             </div>
@@ -205,7 +196,7 @@ export default function Login() {
         {/* Back to Home */}
         <div className="mt-8 text-center">
           <Link
-            to="/"
+            href="/"
             className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             ← 홈으로 돌아가기

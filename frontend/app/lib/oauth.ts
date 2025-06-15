@@ -22,7 +22,7 @@ export const initiateGoogleOAuth = async () => {
   }
 
   // 환경변수에서 Google OAuth 설정 가져오기
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
   const redirectUri = `${window.location.origin}/oauth/google/callback`;
   const scope = "https://www.googleapis.com/auth/contacts.readonly";
 
@@ -78,8 +78,8 @@ export const refreshOAuthToken = async (tokenId: string) => {
     body: new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: token.refresh_token,
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
     }),
   });
 

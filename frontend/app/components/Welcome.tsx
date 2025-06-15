@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import Link from "next/link";
 
 export function Welcome() {
   return (
@@ -15,7 +15,7 @@ export function Welcome() {
             </span>
           </div>
           <Link
-            to="/login"
+            href="/login"
             className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-gray-700 transition-colors"
           >
             로그인
@@ -40,7 +40,7 @@ export function Welcome() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link
-              to="/workspace"
+              href="/workspace"
               className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all"
             >
               시작하기
@@ -128,7 +128,7 @@ export function Welcome() {
           </p>
           <div className="mt-8">
             <Link
-              to="/workspace"
+              href="/workspace"
               className="rounded-lg bg-white px-8 py-3 text-sm font-semibold text-blue-600 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
             >
               무료로 시작하기

@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router";
-import { parseOAuthState } from "../lib/oauth";
-import { supabase } from "../lib/supabase";
+"use client";
 
-export default function GoogleOAuthCallback() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { parseOAuthState } from "../../../lib/oauth";
+import { supabase } from "../../../lib/supabase";
+
+export default function GoogleOAuthCallbackPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [status, setStatus] = useState<"processing" | "success" | "error">(
     "processing"
   );
@@ -44,8 +46,8 @@ export default function GoogleOAuthCallback() {
             },
             body: new URLSearchParams({
               code,
-              client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-              client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+              client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+              client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
               redirect_uri: `${window.location.origin}/oauth/google/callback`,
               grant_type: "authorization_code",
             }),
@@ -91,7 +93,7 @@ export default function GoogleOAuthCallback() {
 
         // 3초 후 워크스페이스로 리다이렉트
         setTimeout(() => {
-          navigate("/workspace", { replace: true });
+          router.replace("/workspace");
         }, 3000);
       } catch (error) {
         console.error("OAuth Callback Error:", error);
@@ -106,7 +108,7 @@ export default function GoogleOAuthCallback() {
     };
 
     handleOAuthCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, router]);
 
   const getStatusIcon = () => {
     switch (status) {
@@ -165,7 +167,7 @@ export default function GoogleOAuthCallback() {
   };
 
   const handleReturnToWorkspace = () => {
-    navigate("/workspace", { replace: true });
+    router.replace("/workspace");
   };
 
   return (
