@@ -208,7 +208,7 @@ NOTION_REDIRECT_URI=
 pnpm create vite@latest nocioun --template react-ts
 
 # 의존성 설치
-pnpm install @supabase/supabase-js @headlessui/react @heroicons/react react-router-dom
+pnpm install @supabase/supabase-js @headlessui/react @heroicons/react
 
 # 개발 의존성 설치
 pnpm install -D @types/react @types/react-dom tailwindcss postcss autoprefixer
