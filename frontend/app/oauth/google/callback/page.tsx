@@ -91,10 +91,22 @@ export default function GoogleOAuthCallbackPage() {
         setStatus("success");
         setMessage("Google 계정 연결이 완료되었습니다!");
 
-        // 3초 후 워크스페이스로 리다이렉트
-        setTimeout(() => {
-          router.replace("/workspace");
-        }, 3000);
+        // 부모 창에 성공 메시지 전송 (팝업인 경우)
+        if (window.opener) {
+          window.opener.postMessage(
+            { type: "GOOGLE_OAUTH_SUCCESS" },
+            window.location.origin
+          );
+          // 3초 후 창 닫기
+          setTimeout(() => {
+            window.close();
+          }, 3000);
+        } else {
+          // 일반 창인 경우 워크스페이스로 리다이렉트
+          setTimeout(() => {
+            router.replace("/workspace");
+          }, 3000);
+        }
       } catch (error) {
         console.error("OAuth Callback Error:", error);
 
@@ -104,6 +116,17 @@ export default function GoogleOAuthCallbackPage() {
             ? `연결 실패: ${error.message}`
             : "알 수 없는 오류가 발생했습니다."
         );
+
+        // 부모 창에 에러 메시지 전송 (팝업인 경우)
+        if (window.opener) {
+          window.opener.postMessage(
+            {
+              type: "GOOGLE_OAUTH_ERROR",
+              error: error instanceof Error ? error.message : "알 수 없는 오류",
+            },
+            window.location.origin
+          );
+        }
       }
     };
 
@@ -167,7 +190,19 @@ export default function GoogleOAuthCallbackPage() {
   };
 
   const handleReturnToWorkspace = () => {
-    router.replace("/workspace");
+    if (window.opener) {
+      window.close();
+    } else {
+      router.replace("/workspace");
+    }
+  };
+
+  const handleCloseWindow = () => {
+    if (window.opener) {
+      window.close();
+    } else {
+      router.replace("/workspace");
+    }
   };
 
   return (
@@ -185,13 +220,15 @@ export default function GoogleOAuthCallbackPage() {
           {status === "success" && (
             <div className="mt-4">
               <div className="text-xs text-gray-500 mb-3">
-                3초 후 워크스페이스로 자동 이동합니다.
+                {window.opener
+                  ? "3초 후 창이 자동으로 닫힙니다."
+                  : "3초 후 워크스페이스로 자동 이동합니다."}
               </div>
               <button
                 onClick={handleReturnToWorkspace}
                 className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
               >
-                지금 워크스페이스로 이동
+                {window.opener ? "창 닫기" : "지금 워크스페이스로 이동"}
               </button>
             </div>
           )}
@@ -199,23 +236,11 @@ export default function GoogleOAuthCallbackPage() {
           {status === "error" && (
             <div className="mt-4">
               <button
-                onClick={handleReturnToWorkspace}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors mr-2"
+                onClick={handleCloseWindow}
+                className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors mr-2"
               >
-                워크스페이스로 돌아가기
+                {window.opener ? "창 닫기" : "워크스페이스로 돌아가기"}
               </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                다시 시도
-              </button>
-            </div>
-          )}
-
-          {status === "processing" && (
-            <div className="mt-4 text-xs text-gray-500">
-              이 과정은 몇 초 정도 소요됩니다.
             </div>
           )}
         </div>

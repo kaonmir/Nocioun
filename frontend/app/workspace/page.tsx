@@ -4,15 +4,42 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-// import { initiateGoogleOAuth, getOAuthToken, getGoogleContacts } from '../lib/oauth'
+import {
+  initiateGoogleOAuth,
+  getOAuthToken,
+  getGoogleContacts,
+} from "../lib/oauth";
 
 export default function WorkspacePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [checkingConnection, setCheckingConnection] = useState(false);
 
   useEffect(() => {
     checkUser();
+
+    // OAuth 팝업에서 오는 메시지 리스너
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === "GOOGLE_OAUTH_SUCCESS") {
+        // Google 연결 성공 시 상태 업데이트
+        setGoogleConnected(true);
+        setCheckingConnection(false);
+      } else if (event.data.type === "GOOGLE_OAUTH_ERROR") {
+        // Google 연결 실패 시 에러 처리
+        setCheckingConnection(false);
+        alert(`Google 연결 실패: ${event.data.error}`);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
   }, []);
 
   const checkUser = async () => {
@@ -26,11 +53,33 @@ export default function WorkspacePage() {
         return;
       }
       setUser(user);
+      await checkGoogleConnection();
     } catch (error) {
       console.error("User check error:", error);
       router.push("/login");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkGoogleConnection = async () => {
+    try {
+      const token = await getOAuthToken("google");
+      setGoogleConnected(!!token);
+    } catch (error) {
+      setGoogleConnected(false);
+    }
+  };
+
+  const handleGoogleConnect = async () => {
+    setCheckingConnection(true);
+    try {
+      await initiateGoogleOAuth();
+    } catch (error) {
+      console.error("Google 연결 오류:", error);
+      alert(`Google 연결 중 오류가 발생했습니다: ${error}`);
+    } finally {
+      setCheckingConnection(false);
     }
   };
 
@@ -123,8 +172,14 @@ export default function WorkspacePage() {
                   Google Contacts
                 </h3>
               </div>
-              <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                연결 안됨
+              <div
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  googleConnected
+                    ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {googleConnected ? "연결됨" : "연결 안됨"}
               </div>
             </div>
 
@@ -133,10 +188,21 @@ export default function WorkspacePage() {
             </p>
 
             <button
-              onClick={() => alert("Google 연결 기능을 구현 중입니다.")}
-              className="w-full py-3 px-4 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={handleGoogleConnect}
+              disabled={checkingConnection || googleConnected}
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                googleConnected
+                  ? "bg-green-600 text-white hover:bg-green-500"
+                  : checkingConnection
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-500"
+              }`}
             >
-              Google 연결하기
+              {checkingConnection
+                ? "연결 중..."
+                : googleConnected
+                ? "Google 연결됨"
+                : "Google 연결하기"}
             </button>
           </div>
 
@@ -182,14 +248,20 @@ export default function WorkspacePage() {
 
           <button
             onClick={() => alert("동기화 기능을 구현 중입니다.")}
-            className="px-8 py-4 rounded-lg font-semibold text-lg bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
-            disabled
+            className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors ${
+              googleConnected
+                ? "bg-blue-600 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                : "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
+            }`}
+            disabled={!googleConnected}
           >
             Google Contacts 가져오기
           </button>
 
           <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-            동기화를 실행하려면 먼저 Google을 연결해주세요.
+            {googleConnected
+              ? "Google이 연결되었습니다. 동기화를 시작할 수 있습니다."
+              : "동기화를 실행하려면 먼저 Google을 연결해주세요."}
           </p>
         </div>
       </main>
