@@ -1,6 +1,31 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+import { UserProfile } from "./UserProfile";
 
 export function Welcome() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      setUser(user);
+    } catch (error) {
+      console.error("User check error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
@@ -14,12 +39,18 @@ export function Welcome() {
               Nocioun
             </span>
           </div>
-          <Link
-            href="/login"
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-gray-700 transition-colors"
-          >
-            로그인
-          </Link>
+          {loading ? (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          ) : user ? (
+            <UserProfile user={user} />
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-gray-700 transition-colors"
+            >
+              로그인
+            </Link>
+          )}
         </nav>
       </header>
 
@@ -43,7 +74,7 @@ export function Welcome() {
               href="/workspace"
               className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all"
             >
-              시작하기
+              {user ? "워크스페이스로 이동" : "시작하기"}
             </Link>
             <a
               href="#features"
@@ -131,7 +162,7 @@ export function Welcome() {
               href="/workspace"
               className="rounded-lg bg-white px-8 py-3 text-sm font-semibold text-blue-600 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
             >
-              무료로 시작하기
+              {user ? "워크스페이스로 이동" : "무료로 시작하기"}
             </Link>
           </div>
         </div>
@@ -141,7 +172,7 @@ export function Welcome() {
       <footer className="px-4 py-8 mx-auto max-w-7xl border-t border-gray-200 dark:border-gray-700">
         <div className="text-center text-sm text-gray-600 dark:text-gray-400">
           <p>
-            &copy; 2024 Nocioun. Made with ❤️ for better contact management.
+            &copy; 2025 Nocioun. Made with ❤️ for better contact management.
           </p>
         </div>
       </footer>

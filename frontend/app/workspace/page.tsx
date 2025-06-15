@@ -9,6 +9,7 @@ import {
   getOAuthToken,
   getGoogleContacts,
 } from "../lib/oauth";
+import { UserProfile } from "../components/UserProfile";
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -83,11 +84,6 @@ export default function WorkspacePage() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -110,26 +106,7 @@ export default function WorkspacePage() {
             </span>
           </Link>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              {user?.user_metadata?.avatar_url && (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full"
-                />
-              )}
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {user?.user_metadata?.full_name || user?.email}
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 transition-colors"
-            >
-              로그아웃
-            </button>
-          </div>
+          <UserProfile user={user} />
         </nav>
       </header>
 
