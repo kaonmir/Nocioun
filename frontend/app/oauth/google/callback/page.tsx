@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { parseOAuthState } from "../../../lib/oauth";
-import { supabase } from "../../../lib/supabase";
 
 export default function GoogleOAuthCallbackPage() {
   const searchParams = useSearchParams();
@@ -36,60 +35,31 @@ export default function GoogleOAuthCallbackPage() {
 
         setMessage("Google에서 토큰을 가져오는 중...");
 
-        // Google OAuth 토큰 교환
-        const tokenResponse = await fetch(
-          "https://oauth2.googleapis.com/token",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              code,
-              client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-              client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
-              redirect_uri: `${window.location.origin}/oauth/google/callback`,
-              grant_type: "authorization_code",
-            }),
-          }
-        );
+        // 서버 사이드 API Route로 토큰 교환 요청
+        const tokenResponse = await fetch("/api/oauth/google/callback", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code,
+            state,
+          }),
+        });
 
         if (!tokenResponse.ok) {
-          throw new Error("토큰 교환에 실패했습니다.");
+          const errorData = await tokenResponse.json();
+          throw new Error(errorData.error || "토큰 교환에 실패했습니다.");
         }
 
-        const tokens = await tokenResponse.json();
+        const result = await tokenResponse.json();
 
-        if (!tokens.access_token) {
-          throw new Error("액세스 토큰을 받지 못했습니다.");
-        }
-
-        setMessage("토큰을 데이터베이스에 저장하는 중...");
-
-        // 토큰을 데이터베이스에 저장
-        const { error: dbError } = await supabase.from("oauth_tokens").upsert(
-          {
-            user_id: stateData.userId,
-            provider: "google",
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
-            expires_at: new Date(
-              Date.now() + tokens.expires_in * 1000
-            ).toISOString(),
-            token_type: tokens.token_type || "Bearer",
-            scope: tokens.scope,
-          },
-          {
-            onConflict: "user_id,provider",
-          }
-        );
-
-        if (dbError) {
-          throw new Error(`데이터베이스 저장 실패: ${dbError.message}`);
+        if (!result.success) {
+          throw new Error(result.error || "토큰 처리에 실패했습니다.");
         }
 
         setStatus("success");
-        setMessage("Google 계정 연결이 완료되었습니다!");
+        setMessage(result.message || "Google 계정 연결이 완료되었습니다!");
 
         // 부모 창에 성공 메시지 전송 (팝업인 경우)
         if (window.opener) {

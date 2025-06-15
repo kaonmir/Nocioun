@@ -17,6 +17,7 @@ export default function WorkspacePage() {
   const [loading, setLoading] = useState(true);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -81,6 +82,42 @@ export default function WorkspacePage() {
       alert(`Google 연결 중 오류가 발생했습니다: ${error}`);
     } finally {
       setCheckingConnection(false);
+    }
+  };
+
+  const handleGoogleDisconnect = async () => {
+    if (!confirm("정말로 Google 연결을 해제하시겠습니까?")) {
+      return;
+    }
+
+    setDisconnecting(true);
+    try {
+      const response = await fetch("/api/oauth/disconnect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: "google",
+          userId: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "연결 해제에 실패했습니다.");
+      }
+
+      const result = await response.json();
+
+      // 상태 업데이트
+      setGoogleConnected(false);
+      alert(result.message || "Google 연결이 해제되었습니다.");
+    } catch (error) {
+      console.error("Google 연결 해제 오류:", error);
+      alert(`Google 연결 해제 중 오류가 발생했습니다: ${error}`);
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -164,23 +201,47 @@ export default function WorkspacePage() {
               Google Contacts에서 연락처를 가져와 Notion과 동기화합니다.
             </p>
 
-            <button
-              onClick={handleGoogleConnect}
-              disabled={checkingConnection || googleConnected}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                googleConnected
-                  ? "bg-green-600 text-white hover:bg-green-500"
-                  : checkingConnection
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-500"
-              }`}
-            >
-              {checkingConnection
-                ? "연결 중..."
-                : googleConnected
-                ? "Google 연결됨"
-                : "Google 연결하기"}
-            </button>
+            {googleConnected ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-green-600 dark:text-green-400 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span className="text-green-700 dark:text-green-300 font-medium">
+                    Google 연결이 완료되었습니다
+                  </span>
+                </div>
+                <button
+                  onClick={handleGoogleDisconnect}
+                  disabled={disconnecting}
+                  className="w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed"
+                >
+                  {disconnecting ? "연결 해제 중..." : "Google 연결 해제"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleGoogleConnect}
+                disabled={checkingConnection}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  checkingConnection
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-500"
+                }`}
+              >
+                {checkingConnection ? "연결 중..." : "Google 연결하기"}
+              </button>
+            )}
           </div>
 
           {/* Notion Card */}

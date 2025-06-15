@@ -60,54 +60,6 @@ export const getOAuthToken = async (provider: string) => {
   return data;
 };
 
-// OAuth 토큰 갱신
-export const refreshOAuthToken = async (tokenId: string) => {
-  const { data: token } = await supabase
-    .from("oauth_tokens")
-    .select("*")
-    .eq("id", tokenId)
-    .single();
-
-  if (!token?.refresh_token) {
-    throw new Error("리프레시 토큰이 없습니다.");
-  }
-
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: token.refresh_token,
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
-    }),
-  });
-
-  const newTokens = await response.json();
-
-  if (!newTokens.access_token) {
-    throw new Error("토큰 갱신에 실패했습니다.");
-  }
-
-  // 새 토큰으로 업데이트
-  const { error } = await supabase
-    .from("oauth_tokens")
-    .update({
-      access_token: newTokens.access_token,
-      expires_at: new Date(
-        Date.now() + newTokens.expires_in * 1000
-      ).toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", tokenId);
-
-  if (error) {
-    throw error;
-  }
-
-  return newTokens.access_token;
-};
-
 // Google Contacts API 호출
 export const getGoogleContacts = async (accessToken: string) => {
   const response = await fetch(
