@@ -22,20 +22,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Google OAuth 토큰 교환 - 서버에서만 실행
-    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    // Notion OAuth 토큰 교환 - 서버에서만 실행
+    const tokenResponse = await fetch("https://api.notion.com/v1/oauth/token", {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(
+          `${process.env.NEXT_PUBLIC_NOTION_CLIENT_ID}:${process.env.NOTION_CLIENT_SECRET}`
+        ).toString("base64")}`,
       },
-      body: new URLSearchParams({
+      body: JSON.stringify({
+        grant_type: "authorization_code",
         code,
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET!, // NEXT_PUBLIC_ 제거
         redirect_uri: `${
           process.env.NEXTAUTH_URL || `${request.nextUrl.origin}`
-        }/oauth/google/callback`,
-        grant_type: "authorization_code",
+        }/oauth/notion/callback`,
       }),
     });
 
@@ -61,14 +62,14 @@ export async function POST(request: NextRequest) {
     const { error: dbError } = await supabaseServer.from("oauth_tokens").upsert(
       {
         user_id: stateData.userId,
-        provider: "google",
+        provider: "notion",
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
-        expires_at: new Date(
-          Date.now() + tokens.expires_in * 1000
-        ).toISOString(),
+        expires_at: tokens.expires_at
+          ? new Date(tokens.expires_at).toISOString()
+          : null,
         token_type: tokens.token_type || "Bearer",
-        scope: tokens.scope,
+        scope: "read",
       },
       {
         onConflict: "user_id,provider",
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Google 계정 연결이 완료되었습니다!",
+      message: "Notion 계정 연결이 완료되었습니다!",
     });
   } catch (error) {
     console.error("OAuth API Error:", error);

@@ -8,6 +8,7 @@ import {
   initiateGoogleOAuth,
   getOAuthToken,
   getGoogleContacts,
+  initiateNotionOAuth,
 } from "../lib/oauth";
 import { UserProfile } from "../components/UserProfile";
 
@@ -18,6 +19,10 @@ export default function WorkspacePage() {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [notionConnected, setNotionConnected] = useState(false);
+  const [checkingNotionConnection, setCheckingNotionConnection] =
+    useState(false);
+  const [disconnectingNotion, setDisconnectingNotion] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -34,6 +39,14 @@ export default function WorkspacePage() {
         // Google 연결 실패 시 에러 처리
         setCheckingConnection(false);
         alert(`Google 연결 실패: ${event.data.error}`);
+      } else if (event.data.type === "NOTION_OAUTH_SUCCESS") {
+        // Notion 연결 성공 시 상태 업데이트
+        setNotionConnected(true);
+        setCheckingNotionConnection(false);
+      } else if (event.data.type === "NOTION_OAUTH_ERROR") {
+        // Notion 연결 실패 시 에러 처리
+        setCheckingNotionConnection(false);
+        alert(`Notion 연결 실패: ${event.data.error}`);
       }
     };
 
@@ -56,6 +69,7 @@ export default function WorkspacePage() {
       }
       setUser(user);
       await checkGoogleConnection();
+      await checkNotionConnection();
     } catch (error) {
       console.error("User check error:", error);
       router.push("/login");
@@ -70,6 +84,15 @@ export default function WorkspacePage() {
       setGoogleConnected(!!token);
     } catch (error) {
       setGoogleConnected(false);
+    }
+  };
+
+  const checkNotionConnection = async () => {
+    try {
+      const token = await getOAuthToken("notion");
+      setNotionConnected(!!token);
+    } catch (error) {
+      setNotionConnected(false);
     }
   };
 
@@ -118,6 +141,54 @@ export default function WorkspacePage() {
       alert(`Google 연결 해제 중 오류가 발생했습니다: ${error}`);
     } finally {
       setDisconnecting(false);
+    }
+  };
+
+  const handleNotionConnect = async () => {
+    setCheckingNotionConnection(true);
+    try {
+      await initiateNotionOAuth();
+    } catch (error) {
+      console.error("Notion 연결 오류:", error);
+      alert(`Notion 연결 중 오류가 발생했습니다: ${error}`);
+    } finally {
+      setCheckingNotionConnection(false);
+    }
+  };
+
+  const handleNotionDisconnect = async () => {
+    if (!confirm("정말로 Notion 연결을 해제하시겠습니까?")) {
+      return;
+    }
+
+    setDisconnectingNotion(true);
+    try {
+      const response = await fetch("/api/oauth/disconnect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          provider: "notion",
+          userId: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "연결 해제에 실패했습니다.");
+      }
+
+      const result = await response.json();
+
+      // 상태 업데이트
+      setNotionConnected(false);
+      alert(result.message || "Notion 연결이 해제되었습니다.");
+    } catch (error) {
+      console.error("Notion 연결 해제 오류:", error);
+      alert(`Notion 연결 해제 중 오류가 발생했습니다: ${error}`);
+    } finally {
+      setDisconnectingNotion(false);
     }
   };
 
@@ -257,8 +328,14 @@ export default function WorkspacePage() {
                   Notion
                 </h3>
               </div>
-              <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                연결 안됨
+              <div
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  notionConnected
+                    ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                }`}
+              >
+                {notionConnected ? "연결됨" : "연결 안됨"}
               </div>
             </div>
 
@@ -266,12 +343,47 @@ export default function WorkspacePage() {
               Notion 데이터베이스에 연락처 정보를 저장하고 관리합니다.
             </p>
 
-            <button
-              onClick={() => alert("Notion 연결 기능을 준비 중입니다.")}
-              className="w-full py-3 px-4 rounded-lg font-medium bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-            >
-              Notion 연결하기
-            </button>
+            {notionConnected ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-green-600 dark:text-green-400 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span className="text-green-700 dark:text-green-300 font-medium">
+                    Notion 연결이 완료되었습니다
+                  </span>
+                </div>
+                <button
+                  onClick={handleNotionDisconnect}
+                  disabled={disconnectingNotion}
+                  className="w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 disabled:bg-gray-400 disabled:text-white disabled:cursor-not-allowed"
+                >
+                  {disconnectingNotion ? "연결 해제 중..." : "Notion 연결 해제"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleNotionConnect}
+                disabled={checkingNotionConnection}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+                  checkingNotionConnection
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+                }`}
+              >
+                {checkingNotionConnection ? "연결 중..." : "Notion 연결하기"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -287,19 +399,23 @@ export default function WorkspacePage() {
           <button
             onClick={() => alert("동기화 기능을 구현 중입니다.")}
             className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors ${
-              googleConnected
+              googleConnected && notionConnected
                 ? "bg-blue-600 text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
             }`}
-            disabled={!googleConnected}
+            disabled={!googleConnected || !notionConnected}
           >
-            Google Contacts 가져오기
+            Google Contacts → Notion 동기화
           </button>
 
           <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-            {googleConnected
-              ? "Google이 연결되었습니다. 동기화를 시작할 수 있습니다."
-              : "동기화를 실행하려면 먼저 Google을 연결해주세요."}
+            {googleConnected && notionConnected
+              ? "Google과 Notion이 모두 연결되었습니다. 동기화를 시작할 수 있습니다."
+              : !googleConnected && !notionConnected
+              ? "동기화를 실행하려면 먼저 Google과 Notion을 모두 연결해주세요."
+              : !googleConnected
+              ? "Google 연결이 필요합니다."
+              : "Notion 연결이 필요합니다."}
           </p>
         </div>
       </main>
