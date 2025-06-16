@@ -1,0 +1,289 @@
+{
+  "resourceName": "people/c3445162185196573062",
+  "etag": "%EiMBAgMFBgcICQoLDA0ODxATFBUWGSEiIyQlJicuNDU3PT4/QBoEAQIFByIMOGF5dHJTTHlwdVk9",
+  "metadata": {
+    "sources": [
+      {
+        "type": "CONTACT",
+        "id": "2fcfacc112401186",
+        "etag": "#8aytrSLypuY=",
+        "updateTime": "2025-06-15T15:19:03.337588Z"
+      }
+    ],
+    "objectType": "PERSON"
+  },
+  "names": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        },
+        "sourcePrimary": true
+      },
+      "displayName": "Mr. Jeff Sunghun Son Sir",
+      "familyName": "Son",
+      "givenName": "Jeff",
+      "middleName": "Sunghun",
+      "honorificPrefix": "Mr.",
+      "honorificSuffix": "Sir",
+      "phoneticFamilyName": "소온",
+      "phoneticGivenName": "제프",
+      "phoneticMiddleName": "성훈",
+      "displayNameLastFirst": "Son, Mr. Jeff Sunghun, Sir",
+      "unstructuredName": "Mr. Jeff Sunghun Son Sir"
+    }
+  ],
+  "nicknames": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "value": "Kaonmir"
+    }
+  ],
+  "photos": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "url": "https://lh3.googleusercontent.com/cm/AGPWSu87IzSmFic1Q-UR7Q5CgQ3gtMbbpYQ9213JQe-TsAdDmMrDOGWtOqEyWteTUgkxgqgh3w=s100",
+      "default": true
+    }
+  ],
+  "birthdays": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "date": {
+        "year": 1999,
+        "month": 4,
+        "day": 26
+      }
+    }
+  ],
+  "addresses": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "formattedValue": "상세 주소\n사서함\n상세 주소 2, 12345\nKR",
+      "type": "라벨",
+      "formattedType": "라벨",
+      "poBox": "사서함",
+      "streetAddress": "상세 주소",
+      "extendedAddress": "상세 주소 2",
+      "postalCode": "12345",
+      "country": "KR",
+      "countryCode": "KR"
+    }
+  ],
+  "emailAddresses": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        },
+        "sourcePrimary": true
+      },
+      "value": "sonjeff2@naver.com",
+      "type": "home",
+      "formattedType": "Home"
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "value": "thswpvm11112@gmail.com",
+      "type": "work",
+      "formattedType": "Work"
+    }
+  ],
+  "phoneNumbers": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        },
+        "sourcePrimary": true
+      },
+      "value": "010-3095-7558",
+      "canonicalForm": "+821030957558",
+      "type": "mobile",
+      "formattedType": "Mobile"
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "value": "+22001012345678",
+      "type": "work",
+      "formattedType": "Work"
+    }
+  ],
+  "biographies": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "value": "메모입니다?",
+      "contentType": "TEXT_PLAIN"
+    }
+  ],
+  "urls": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        },
+        "sourcePrimary": true
+      },
+      "value": "naver.com",
+      "type": "profile",
+      "formattedType": "Profile"
+    }
+  ],
+  "organizations": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        },
+        "sourcePrimary": true
+      },
+      "name": "우리집주식회사",
+      "department": "내방",
+      "title": "사장"
+    }
+  ],
+  "memberships": [
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "contactGroupMembership": {
+        "contactGroupId": "139fc83088667ad3",
+        "contactGroupResourceName": "contactGroups/139fc83088667ad3"
+      }
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "contactGroupMembership": {
+        "contactGroupId": "5d4bd7ed8dfd5576",
+        "contactGroupResourceName": "contactGroups/5d4bd7ed8dfd5576"
+      }
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "contactGroupMembership": {
+        "contactGroupId": "family",
+        "contactGroupResourceName": "contactGroups/family"
+      }
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "contactGroupMembership": {
+        "contactGroupId": "friends",
+        "contactGroupResourceName": "contactGroups/friends"
+      }
+    },
+    {
+      "metadata": {
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "contactGroupMembership": {
+        "contactGroupId": "myContacts",
+        "contactGroupResourceName": "contactGroups/myContacts"
+      }
+    }
+  ],
+  "events": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "date": {
+        "year": 2020,
+        "month": 7,
+        "day": 31
+      },
+      "type": "anniversary",
+      "formattedType": "Anniversary"
+    }
+  ],
+  "relations": [
+    {
+      "metadata": {
+        "primary": true,
+        "source": {
+          "type": "CONTACT",
+          "id": "2fcfacc112401186"
+        }
+      },
+      "person": "관련인",
+      "type": "mother",
+      "formattedType": "Mother"
+    }
+  ]
+}
