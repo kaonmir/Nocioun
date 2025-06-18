@@ -1,0 +1,20 @@
+allow_delete: true
+allow_create_property: true
+mapping:
+  display_name: null
+  first_name: null
+  last_name: null
+  email: null
+  phone: null
+  address: null
+  company: null
+  department: null
+  job_title: null
+  notes: null
+  birthday: null
+  website: null
+  photo: null
+  resource_name: resource_name
+auth:
+  google: null
+  notion: null

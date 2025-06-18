@@ -1,114 +1,153 @@
-# Nocioun - DaisyUI Welcome Page with Supabase Auth
+# nocioun Monorepo
 
-DaisyUI 컴포넌트와 Supabase OAuth 인증이 구현된 Next.js 애플리케이션입니다.
+Google Contacts와 Notion을 연동하는 도구들의 모노레포입니다.
 
-## 주요 기능
+[![CI](https://github.com/kaonmir/nocioun/actions/workflows/ci.yml/badge.svg)](https://github.com/kaonmir/nocioun/actions/workflows/ci.yml)
+[![nocioun CLI](https://badge.fury.io/js/nocioun.svg)](https://badge.fury.io/js/nocioun)
+[![n8n-nodes-nocioun](https://badge.fury.io/js/n8n-nodes-nocioun.svg)](https://badge.fury.io/js/n8n-nodes-nocioun)
 
-- ✨ DaisyUI를 사용한 아름다운 웰컴 페이지
-- 🔐 Supabase OAuth 인증 (GitHub, Google)
-- 📋 인증된 사용자를 위한 Actions 대시보드
-- 🎨 다크모드 지원
-- 📱 반응형 디자인
+## 패키지
 
-## 기술 스택
+### 📦 [nocioun CLI](./packages/cli/)
 
-- **Framework**: Next.js 15
-- **UI**: DaisyUI + Tailwind CSS
-- **Authentication**: Supabase
-- **Language**: TypeScript
-
-## 시작하기
-
-### 1. 의존성 설치
+Google Contacts와 Notion을 동기화하는 CLI 도구
 
 ```bash
-pnpm install
+# 설치 없이 바로 사용
+npx nocioun --help
+
+# 전역 설치
+npm install -g nocioun
 ```
 
-### 2. 환경 변수 설정
+### 🔧 [n8n-nodes-nocioun](./packages/n8n-nodes/)
 
-`.env.local` 파일을 생성하고 다음 내용을 추가하세요:
-
-```env
-# Supabase 설정
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-```
-
-### 3. Supabase 설정
-
-1. [Supabase](https://supabase.com)에서 새 프로젝트 생성
-2. Authentication > Providers에서 GitHub, Google OAuth 설정
-3. Database에서 다음 테이블들이 생성되어 있는지 확인:
-   - `actions`
-   - `jobs`
-   - `oauth_tokens`
-
-### 4. 개발 서버 실행
+n8n용 Google Contacts와 Notion 커스텀 노드
 
 ```bash
-pnpm dev
+# n8n에 설치
+npm install n8n-nodes-nocioun
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)를 열어서 확인하세요.
+## 빠른 시작
 
-## 페이지 구조
-
-- `/` - DaisyUI로 만든 웰컴 페이지
-- `/login` - OAuth 로그인 페이지
-- `/actions` - 인증된 사용자를 위한 액션 대시보드
-
-## 인증 플로우
-
-1. 사용자가 "시작하기" 버튼 클릭
-2. `/actions` 페이지로 이동
-3. 로그인하지 않은 경우 `/login`으로 리다이렉트
-4. OAuth 로그인 (GitHub 또는 Google)
-5. 로그인 성공 시 `/actions`로 리다이렉트
-
-## Supabase 스키마
-
-### actions 테이블
-
-```sql
-CREATE TABLE actions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  type TEXT NOT NULL,
-  status TEXT NOT NULL,
-  properties JSONB,
-  user_id UUID NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
-## 개발
+### CLI 사용법
 
 ```bash
-# 개발 서버 시작
-pnpm dev
+# Google 인증
+npx nocioun auth google
 
-# 빌드
-pnpm build
+# Notion 인증
+npx nocioun auth notion
 
-# 프로덕션 서버 시작
-pnpm start
+# 연락처 목록 조회
+npx nocioun contacts list
 
-# 린트
-pnpm lint
+# Google 연락처를 Notion과 동기화
+npx nocioun contacts sync
 ```
+
+### n8n 노드 사용법
+
+1. n8n에서 `n8n-nodes-nocioun` 설치
+2. Google Contacts API 및 Notion API 인증 설정
+3. 워크플로우에서 노드 사용
+
+## 로컬 개발 설치
+
+1. 의존성 설치:
+
+```bash
+npm install
+```
+
+2. TypeScript 컴파일:
+
+```bash
+npm run build:cli
+```
+
+## Google API 설정
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에 접속
+2. 새 프로젝트 생성 또는 기존 프로젝트 선택
+3. People API 활성화
+4. OAuth 2.0 클라이언트 ID 생성 (데스크톱 애플리케이션)
+5. `credentials.json` 파일을 프로젝트 루트에 저장
+
+## 사용법
+
+### 개발 모드
+
+```bash
+npm run dev
+```
+
+### 빌드 후 실행
+
+```bash
+npm start
+```
+
+### 전역 설치 후 사용
+
+```bash
+npm install -g .
+contacts
+```
+
+## 프로젝트 구조
+
+```
+src/
+├── index.ts              # 메인 CLI 애플리케이션
+├── auth/
+│   └── googleAuth.ts     # Google OAuth 인증
+├── services/
+│   └── contactsService.ts # People API 연결
+└── types/
+    └── contact.ts        # 타입 정의
+```
+
+## 주요 라이브러리
+
+- **inquirer**: 대화형 CLI 인터페이스
+- **googleapis**: Google APIs 클라이언트
+- **chalk**: 터미널 텍스트 색상
+- **ora**: 로딩 스피너
 
 ## 배포
 
-Vercel에 배포할 때 환경 변수를 설정해야 합니다:
+### 자동 배포 (GitHub Actions)
 
-1. Vercel 대시보드에서 프로젝트 선택
-2. Settings > Environment Variables에서 환경 변수 추가
-3. Supabase URL과 Key 설정
+이 프로젝트는 GitHub Actions를 통해 자동 배포됩니다:
+
+1. **CI 워크플로우**: 모든 푸시와 PR에 대해 테스트 및 빌드 실행
+2. **릴리스 워크플로우**: `v*` 태그 푸시 시 자동으로 npm에 배포
+3. **수동 릴리스**: GitHub Actions에서 수동으로 릴리스 트리거 가능
+
+### 수동 릴리스 방법
+
+1. GitHub 저장소의 "Actions" 탭으로 이동
+2. "Manual Release" 워크플로우 선택
+3. "Run workflow" 버튼 클릭
+4. 버전 번호 입력 또는 릴리스 타입 선택 (patch/minor/major)
+5. 워크플로우 실행
+
+### 태그 기반 릴리스
+
+```bash
+# 새 버전 태그 생성 및 푸시
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+### 필요한 GitHub Secrets
+
+배포를 위해 다음 secrets를 GitHub 저장소에 설정해야 합니다:
+
+- `NPM_TOKEN`: npm 배포를 위한 토큰 ([npm 토큰 생성 방법](https://docs.npmjs.com/creating-and-viewing-access-tokens))
 
 ## 라이센스
 
-MIT License
+MIT

@@ -1,0 +1,180 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to release"
+        required: true
+        type: choice
+        options:
+          - cli
+          - n8n-nodes
+      version:
+        description: "Release version (e.g., 1.0.1, 1.1.0, 2.0.0)"
+        required: true
+        type: string
+      release_type:
+        description: "Release type (if version not specified)"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release-cli:
+    if: github.event.inputs.package == 'cli'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CLI tests
+        run: npm run test --workspace=packages/cli
+
+      - name: Build CLI
+        run: npm run build --workspace=packages/cli
+
+      - name: Test CLI execution
+        run: |
+          chmod +x packages/cli/dist/cli/index.js
+          ./packages/cli/dist/cli/index.js --help
+
+      - name: Update CLI version
+        run: |
+          cd packages/cli
+          if [ "${{ github.event.inputs.version }}" != "" ]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Commit CLI version bump
+        run: |
+          git add packages/cli/package.json
+          git commit -m "chore(cli): bump version to v${{ env.NEW_VERSION }}"
+          git tag "cli-v${{ env.NEW_VERSION }}"
+          git push origin main
+          git push origin "cli-v${{ env.NEW_VERSION }}"
+
+      - name: Publish CLI to npm
+        run: npm publish --workspace=packages/cli --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release for CLI
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: cli-v${{ env.NEW_VERSION }}
+          release_name: nocioun CLI v${{ env.NEW_VERSION }}
+          body: |
+            ## 🚀 nocioun CLI v${{ env.NEW_VERSION }}
+
+            ### Installation
+            ```bash
+            npx nocioun@${{ env.NEW_VERSION }} --help
+            ```
+
+            ### Latest version
+            ```bash
+            npx nocioun --help
+            ```
+          draft: false
+          prerelease: false
+
+  release-n8n:
+    if: github.event.inputs.package == 'n8n-nodes'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build n8n nodes
+        run: npm run build --workspace=packages/n8n-nodes
+
+      - name: Update n8n nodes version
+        run: |
+          cd packages/n8n-nodes
+          if [ "${{ github.event.inputs.version }}" != "" ]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Commit n8n nodes version bump
+        run: |
+          git add packages/n8n-nodes/package.json
+          git commit -m "chore(n8n): bump version to v${{ env.NEW_VERSION }}"
+          git tag "n8n-v${{ env.NEW_VERSION }}"
+          git push origin main
+          git push origin "n8n-v${{ env.NEW_VERSION }}"
+
+      - name: Publish n8n nodes to npm
+        run: npm publish --workspace=packages/n8n-nodes --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release for n8n nodes
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: n8n-v${{ env.NEW_VERSION }}
+          release_name: n8n-nodes-nocioun v${{ env.NEW_VERSION }}
+          body: |
+            ## 🚀 n8n-nodes-nocioun v${{ env.NEW_VERSION }}
+
+            ### Installation
+            ```bash
+            npm install n8n-nodes-nocioun@${{ env.NEW_VERSION }}
+            ```
+
+            ### Latest version
+            ```bash
+            npm install n8n-nodes-nocioun
+            ```
+          draft: false
+          prerelease: false
