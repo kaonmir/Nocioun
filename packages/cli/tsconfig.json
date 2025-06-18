@@ -4,11 +4,13 @@
     "outDir": "./dist",
     "rootDir": ".",
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   },
   "include": [
-    "./**/*"
+    "./**/*",
+    "../core/jest.config.js"
   ],
   "exclude": [
     "node_modules",
