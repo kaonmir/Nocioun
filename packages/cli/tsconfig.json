@@ -9,12 +9,12 @@
     ]
   },
   "include": [
-    "./**/*",
-    "../core/jest.config.js"
+    "./**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
+    "dist/**/*",
     "**/*.test.ts",
     "**/__tests__/**",
     "README.md",
