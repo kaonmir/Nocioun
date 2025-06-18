@@ -38,3 +38,7 @@ pids/
 *.pid
 *.seed
 *.pid.lock 
+
+.vscode/launch.json
+.tmp
+tmp

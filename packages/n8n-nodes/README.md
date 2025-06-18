@@ -1,43 +1,48 @@
-# n8n-nodes-nocioun
+# n8n-nodes-_node-name_
 
-Google Contacts와 Notion을 위한 n8n 커스텀 노드 모음입니다.
+This is an n8n community node. It lets you use _app/service name_ in your n8n workflows.
 
-## 설치
+_App/service name_ is _one or two sentences describing the service this node integrates with_.
 
-```bash
-npm install n8n-nodes-nocioun
-```
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-## 포함된 노드
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  <!-- delete if no auth needed -->  
+[Compatibility](#compatibility)  
+[Usage](#usage)  <!-- delete if not using this section -->  
+[Resources](#resources)  
+[Version history](#version-history)  <!-- delete if not using this section -->  
 
-### Google Contacts Node
+## Installation
 
-- 연락처 목록 조회
-- 연락처 검색
-- 연락처 생성/수정/삭제
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-### Notion Node
+## Operations
 
-- 데이터베이스 페이지 생성/수정/삭제
-- 페이지 조회
-- 데이터베이스 쿼리
+_List the operations supported by your node._
 
-## 인증 정보
+## Credentials
 
-### Google Contacts API
+_If users need to authenticate with the app/service, provide details here. You should include prerequisites (such as signing up with the service), available authentication methods, and how to set them up._
 
-- OAuth 2.0 또는 Service Account 인증 지원
+## Compatibility
 
-### Notion API
+_State the minimum n8n version, as well as which versions you test against. You can also include any known version incompatibility issues._
 
-- Internal Integration Token 사용
+## Usage
 
-## 사용 방법
+_This is an optional section. Use it to help users with any difficult or confusing aspects of the node._
 
-1. n8n에서 노드를 설치한 후
-2. 각 노드의 인증 정보를 설정
-3. 워크플로우에서 노드를 사용
+_By the time users are looking for community nodes, they probably already know n8n basics. But if you expect new users, you can link to the [Try it out](https://docs.n8n.io/try-it-out/) documentation to help them get started._
 
-## 라이센스
+## Resources
 
-MIT
+* [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+* _Link to app/service documentation._
+
+## Version history
+
+_This is another optional section. If your node has multiple versions, include a short description of available versions and what changed, as well as any compatibility impact._
+
+

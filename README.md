@@ -99,7 +99,6 @@ contacts
 ## 프로젝트 구조
 
 ```
-src/
 ├── index.ts              # 메인 CLI 애플리케이션
 ├── auth/
 │   └── googleAuth.ts     # Google OAuth 인증

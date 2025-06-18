@@ -2,9 +2,9 @@
   "name": "nocioun",
   "version": "1.0.0",
   "description": "CLI tool to sync Google contacts with Notion database",
-  "main": "dist/cli/index.js",
+  "main": "dist/index.js",
   "bin": {
-    "nocioun": "./dist/cli/index.js"
+    "nocioun": "./dist/index.js"
   },
   "files": [
     "dist/",
@@ -12,14 +12,14 @@
   ],
   "scripts": {
     "build": "tsc",
-    "build:cli": "tsc && chmod +x dist/cli/index.js",
+    "build:cli": "tsc && chmod +x dist/index.js",
     "clean": "rm -rf dist",
     "test": "jest",
-    "dev": "ts-node src/cli/index.ts",
-    "cli": "ts-node src/cli/index.ts",
+    "dev": "ts-node index.ts",
+    "cli": "ts-node index.ts",
     "prepublishOnly": "npm run clean && npm run build:cli",
     "prepack": "npm run clean && npm run build:cli",
-    "release:check": "npm run clean && npm run build:cli && npm test && ./dist/cli/index.js --help"
+    "release:check": "npm run clean && npm run build:cli && npm test && ./dist/index.js --help"
   },
   "keywords": [
     "cli",

@@ -34,5 +34,5 @@ jobs:
 
       - name: Test CLI execution
         run: |
-          chmod +x packages/cli/dist/cli/index.js
-          ./packages/cli/dist/cli/index.js --help
+          chmod +x packages/cli/dist/index.js
+          ./packages/cli/dist/index.js --help
