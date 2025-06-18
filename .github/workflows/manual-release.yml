@@ -34,12 +34,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Configure git
         run: |
@@ -47,13 +52,13 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run CLI tests
-        run: npm run test --workspace=packages/cli
+        run: pnpm run test --filter=packages/cli
 
       - name: Build CLI
-        run: npm run build --workspace=packages/cli
+        run: pnpm run build --filter=packages/cli
 
       - name: Test CLI execution
         run: |
@@ -80,7 +85,7 @@ jobs:
           git push origin "cli-v${{ env.NEW_VERSION }}"
 
       - name: Publish CLI to npm
-        run: npm publish --workspace=packages/cli --access public
+        run: cd packages/cli && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -115,12 +120,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Configure git
         run: |
@@ -128,10 +138,10 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build n8n nodes
-        run: npm run build --workspace=packages/n8n-nodes
+        run: pnpm run build --filter=packages/n8n-nodes
 
       - name: Update n8n nodes version
         run: |
@@ -153,7 +163,7 @@ jobs:
           git push origin "n8n-v${{ env.NEW_VERSION }}"
 
       - name: Publish n8n nodes to npm
-        run: npm publish --workspace=packages/n8n-nodes --access public
+        run: cd packages/n8n-nodes && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
