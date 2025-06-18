@@ -1,19 +1,22 @@
 {
-	"name": "n8n-nodes-<...>",
+	"name": "@nocioun/n8n-nodes-nocioun",
 	"version": "0.1.0",
-	"description": "",
+	"description": "Nocioun n8n community nodes package",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"nocioun",
+		"automation",
+		"workflow"
 	],
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/nocioun",
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "Nocioun",
+		"email": "sonjeff@naver.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/nocioun.git"
 	},
 	"engines": {
 		"node": ">=20.15"
