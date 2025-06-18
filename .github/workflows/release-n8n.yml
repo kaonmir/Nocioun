@@ -1,0 +1,121 @@
+name: Release n8n Nodes
+
+on:
+  push:
+    tags:
+      - "n8n-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.0.1, 1.1.0, 2.0.0)"
+        required: true
+        type: string
+      release_type:
+        description: "Release type (if version not specified)"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release-n8n:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+
+      - name: Run core tests
+        run: pnpm run test:core
+
+      - name: Run n8n tests
+        run: pnpm run test:n8n
+
+      - name: Build n8n nodes
+        run: pnpm run build:n8n
+
+      - name: Update n8n nodes version (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd packages/n8n-nodes
+          if [ "${{ github.event.inputs.version }}" != "" ]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Update n8n nodes version (tag trigger)
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/n8n-v}
+          cd packages/n8n-nodes
+          npm version $TAG_VERSION --no-git-tag-version
+          echo "NEW_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Commit n8n nodes version bump (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git add packages/n8n-nodes/package.json
+          git commit -m "chore(n8n): bump version to v${{ env.NEW_VERSION }}"
+          git tag "n8n-v${{ env.NEW_VERSION }}"
+          git push origin main
+          git push origin "n8n-v${{ env.NEW_VERSION }}"
+
+      - name: Publish n8n nodes to npm
+        run: cd packages/n8n-nodes && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release for n8n nodes
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: n8n-v${{ env.NEW_VERSION }}
+          release_name: n8n-nodes-nocioun v${{ env.NEW_VERSION }}
+          body: |
+            ## 🚀 n8n-nodes-nocioun v${{ env.NEW_VERSION }}
+
+            ### Installation
+            ```bash
+            npm install @nocioun/n8n-nodes-nocioun@${{ env.NEW_VERSION }}
+            ```
+
+            ### Latest version
+            ```bash
+            npm install @nocioun/n8n-nodes-nocioun
+            ```
+
+            ### Nodes
+            - Google Contacts Node
+            - Notion Node
+            - 인증 정보 관리
+          draft: false
+          prerelease: false

@@ -7,7 +7,28 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.changes.outputs.cli }}
+      n8n-nodes: ${{ steps.changes.outputs.n8n-nodes }}
+      core: ${{ steps.changes.outputs.core }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            cli:
+              - 'packages/cli/**'
+            n8n-nodes:
+              - 'packages/n8n-nodes/**'
+            core:
+              - 'packages/core/**'
+
+  test-core:
+    needs: changes
+    if: ${{ needs.changes.outputs.core == 'true' || needs.changes.outputs.cli == 'true' || needs.changes.outputs.n8n-nodes == 'true' }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -31,13 +52,80 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
-      - name: Run tests
-        run: pnpm run test
+      - name: Build core package
+        run: pnpm --filter=@nocioun/core build
 
-      - name: Build packages
-        run: pnpm run build
+  test-cli:
+    needs: [changes, test-core]
+    if: ${{ needs.changes.outputs.cli == 'true' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+
+      - name: Build core package
+        run: pnpm --filter=@nocioun/core build
+
+      - name: Run CLI tests
+        run: pnpm --filter=@nocioun/cli test
+
+      - name: Build CLI
+        run: pnpm --filter=@nocioun/cli build
 
       - name: Test CLI execution
         run: |
           chmod +x packages/cli/dist/index.js
           ./packages/cli/dist/index.js --help
+
+  test-n8n-nodes:
+    needs: [changes, test-core]
+    if: ${{ needs.changes.outputs.n8n-nodes == 'true' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+
+      - name: Build core package
+        run: pnpm --filter=@nocioun/core build
+
+      - name: Run n8n-nodes tests
+        run: pnpm --filter=@nocioun/n8n-nodes-nocioun test
+
+      - name: Build n8n-nodes
+        run: pnpm --filter=@nocioun/n8n-nodes-nocioun build

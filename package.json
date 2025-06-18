@@ -5,7 +5,13 @@
   "private": true,
   "scripts": {
     "build": "pnpm --filter=@nocioun/core build && pnpm -r build",
+    "build:core": "pnpm --filter=@nocioun/core build",
+    "build:cli": "pnpm --filter=@nocioun/core build && pnpm --filter=nocioun build",
+    "build:n8n": "pnpm --filter=@nocioun/core build && pnpm --filter=@nocioun/n8n-nodes-nocioun build",
     "test": "pnpm -r test",
+    "test:core": "pnpm --filter=@nocioun/core test",
+    "test:cli": "pnpm --filter=nocioun test",
+    "test:n8n": "pnpm --filter=@nocioun/n8n-nodes-nocioun test",
     "clean": "pnpm -r clean",
     "lint": "pnpm -r lint",
     "dev": "pnpm --filter=nocioun dev",

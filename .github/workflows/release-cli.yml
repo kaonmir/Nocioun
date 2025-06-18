@@ -1,0 +1,126 @@
+name: Release CLI
+
+on:
+  push:
+    tags:
+      - "cli-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.0.1, 1.1.0, 2.0.0)"
+        required: true
+        type: string
+      release_type:
+        description: "Release type (if version not specified)"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release-cli:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+
+      - name: Run core tests
+        run: pnpm run test:core
+
+      - name: Run CLI tests
+        run: pnpm run test:cli
+
+      - name: Build CLI
+        run: pnpm run build:cli
+
+      - name: Test CLI execution
+        run: |
+          chmod +x packages/cli/dist/index.js
+          ./packages/cli/dist/index.js --help
+
+      - name: Update CLI version (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd packages/cli
+          if [ "${{ github.event.inputs.version }}" != "" ]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Update CLI version (tag trigger)
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/cli-v}
+          cd packages/cli
+          npm version $TAG_VERSION --no-git-tag-version
+          echo "NEW_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Commit CLI version bump (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git add packages/cli/package.json
+          git commit -m "chore(cli): bump version to v${{ env.NEW_VERSION }}"
+          git tag "cli-v${{ env.NEW_VERSION }}"
+          git push origin main
+          git push origin "cli-v${{ env.NEW_VERSION }}"
+
+      - name: Publish CLI to npm
+        run: cd packages/cli && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release for CLI
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: cli-v${{ env.NEW_VERSION }}
+          release_name: nocioun CLI v${{ env.NEW_VERSION }}
+          body: |
+            ## 🚀 nocioun CLI v${{ env.NEW_VERSION }}
+
+            ### Installation
+            ```bash
+            npx nocioun@${{ env.NEW_VERSION }} --help
+            ```
+
+            ### Latest version
+            ```bash
+            npx nocioun --help
+            ```
+
+            ### Features
+            - Google Contacts 연동
+            - Notion 데이터베이스 동기화
+            - OAuth 인증 지원
+          draft: false
+          prerelease: false
