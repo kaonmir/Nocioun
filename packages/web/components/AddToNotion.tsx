@@ -135,13 +135,19 @@ export function AddToNotion({
               {placeInfo.summary.address.disp}
             </div>
           </div>
-
           <div className="flex items-start">
             <div className="w-16 text-sm font-medium text-gray-600 flex-shrink-0">
               링크:
             </div>
             <div className="flex-1 text-sm text-blue-600 font-mono break-all">
-              {url}
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {url}
+              </a>
             </div>
           </div>
         </div>
@@ -183,20 +189,6 @@ export function AddToNotion({
             </svg>
           </a>
         </div>
-      </div>
-
-      {/* 추가될 정보 설명 */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-3 flex items-center">
-          <span className="mr-2">📝</span>
-          추가될 정보
-        </h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• 장소명: {placeInfo.summary.name} (기존 Title 컬럼에 저장)</li>
-          <li>• 주소: {placeInfo.summary.address.disp}</li>
-          <li>• 카카오맵 링크: {url}</li>
-          <li>• 기타 정보: 전화번호, 홈페이지 등 (있는 경우)</li>
-        </ul>
       </div>
 
       {/* 액션 버튼들 */}

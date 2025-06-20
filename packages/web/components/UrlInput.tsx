@@ -264,20 +264,6 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
           ← 이전으로
         </button>
       </div>
-
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">
-          지원되는 URL 형식:
-        </h4>
-        <ul className="text-xs text-gray-600 space-y-1">
-          <li>• 일반 카카오맵 링크: https://place.map.kakao.com/숫자ID</li>
-          <li>• 카카오 단축 링크: https://kko.kakao.com/단축코드</li>
-          <li>• map.kakao.com 링크: https://map.kakao.com/?itemId=숫자ID</li>
-          <li>
-            • 텍스트에 포함된 링크: &quot;[카카오맵] 장소명 https://...&quot;
-          </li>
-        </ul>
-      </div>
     </div>
   );
 }
