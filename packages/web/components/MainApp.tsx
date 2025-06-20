@@ -122,10 +122,11 @@ export function MainApp() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 진행 상태 표시 */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        {/* 데스크톱용 가로 레이아웃 */}
+        <div className="hidden md:flex items-center justify-between mb-4">
           {[
             { key: "oauth" as Step, label: "Notion 연결", icon: "1" },
             { key: "database" as Step, label: "DB 선택", icon: "2" },
@@ -159,6 +160,47 @@ export function MainApp() {
                     isStepCompleted(step.key) ? "bg-green-500" : "bg-gray-300"
                   }`}
                 ></div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* 모바일용 세로 레이아웃 */}
+        <div className="md:hidden space-y-3 mb-4">
+          {[
+            { key: "oauth" as Step, label: "Notion 연결", icon: "1" },
+            { key: "database" as Step, label: "DB 선택", icon: "2" },
+            { key: "columns" as Step, label: "컬럼 확인", icon: "3" },
+            { key: "url" as Step, label: "URL 입력", icon: "4" },
+            { key: "add" as Step, label: "추가", icon: "5" },
+          ].map((step, index) => (
+            <div key={step.key} className="flex items-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors flex-shrink-0 ${
+                  isCurrentStep(step.key)
+                    ? "bg-blue-500 text-white"
+                    : isStepCompleted(step.key)
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-600"
+                }`}
+              >
+                {isStepCompleted(step.key) ? "✓" : step.icon}
+              </div>
+              <div className="ml-3 flex-1">
+                <span
+                  className={`text-sm font-medium ${
+                    isCurrentStep(step.key)
+                      ? "text-blue-700"
+                      : isStepCompleted(step.key)
+                      ? "text-green-700"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </div>
+              {isCurrentStep(step.key) && (
+                <div className="text-blue-500 text-xs font-medium">진행 중</div>
               )}
             </div>
           ))}
