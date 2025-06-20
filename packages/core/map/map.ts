@@ -1,5 +1,5 @@
 /**
- * 카카오맵 URL에서 장소 정보를 가져오는 모듈
+ * 카카오맵 URL에서 장소를 가져오는 모듈
  */
 
 // ========== 타입 정의 ==========
@@ -262,7 +262,7 @@ async function parsePlaceId(url: string): Promise<string> {
 }
 
 /**
- * 카카오맵 API에서 장소 정보를 가져옵니다
+ * 카카오맵 API에서 장소를 가져옵니다
  * @param placeId - 장소 ID
  * @returns API 응답 데이터
  * @throws ApiRequestError - API 요청 실패 시
@@ -307,7 +307,7 @@ async function fetchPlaceInfo(placeId: string): Promise<any> {
       throw error;
     }
     throw new ApiRequestError(
-      `장소 정보 가져오기 실패: ${
+      `장소 가져오기 실패: ${
         error instanceof Error ? error.message : "알 수 없는 오류"
       }`
     );
@@ -315,9 +315,9 @@ async function fetchPlaceInfo(placeId: string): Promise<any> {
 }
 
 /**
- * 카카오맵 URL 또는 텍스트 입력을 받아서 장소 정보를 가져오는 메인 함수
+ * 카카오맵 URL 또는 텍스트 입력을 받아서 장소를 가져오는 메인 함수
  * @param input - 카카오맵 URL 또는 URL이 포함된 텍스트
- * @returns 장소 정보 데이터
+ * @returns 장소 데이터
  * @throws KakaoMapError - 처리 과정에서 오류 발생 시
  */
 export async function getPlaceInfo(input: string): Promise<any> {
@@ -332,7 +332,7 @@ export async function getPlaceInfo(input: string): Promise<any> {
     url = extractUrlFromInput(input);
   }
 
-  // place_id 파싱 및 장소 정보 가져오기
+  // place_id 파싱 및 장소 가져오기
   const placeId = await parsePlaceId(url);
   return await fetchPlaceInfo(placeId);
 }

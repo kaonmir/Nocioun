@@ -6,7 +6,7 @@ import { PlaceData, REQUIRED_COLUMNS } from "./columns";
  * 이 함수는 mock 구현입니다. 실제 구현에서는 카카오맵 API 응답을 파싱해서
  * Notion 데이터베이스에 저장할 수 있는 형태로 변환해야 합니다.
  *
- * @param placeInfo - getPlaceInfo에서 반환된 장소 정보
+ * @param placeInfo - getPlaceInfo에서 반환된 장소
  * @param originalUrl - 원본 카카오맵 URL
  * @returns Notion에 저장할 PlaceData
  */
@@ -84,12 +84,12 @@ export function convertPlaceDataToNotionProperties(
 }
 
 /**
- * 장소 정보를 Notion 페이지에 추가할 블록들을 생성합니다.
+ * 장소를 Notion 페이지에 추가할 블록들을 생성합니다.
  *
  * 이 함수도 mock 구현입니다. 실제로는 더 풍부한 콘텐츠를 생성할 수 있습니다.
  * 예: 사진, 리뷰, 영업시간, 방문자 통계 등
  *
- * @param placeData - getPlaceInfo에서 반환된 장소 정보
+ * @param placeData - getPlaceInfo에서 반환된 장소
  * @returns Notion 블록 배열
  */
 export function createNotionBlocks(placeData: PlaceData): any[] {

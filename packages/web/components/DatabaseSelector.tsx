@@ -81,7 +81,7 @@ export function DatabaseSelector({
           데이터베이스 선택
         </h2>
         <p className="text-gray-600">
-          카카오맵 장소 정보를 저장할 Notion 데이터베이스를 선택하세요
+          카카오맵 장소를 저장할 Notion 데이터베이스를 선택하세요
         </p>
         <p className="text-sm text-gray-500 mt-1">
           최근 수정된 데이터베이스 20개를 불러옵니다.

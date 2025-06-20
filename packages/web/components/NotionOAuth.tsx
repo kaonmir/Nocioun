@@ -20,7 +20,7 @@ export function NotionOAuth({ onSuccess }: NotionOAuthProps) {
           Notion과 연결하기
         </h2>
         <p className="text-gray-600">
-          카카오맵 장소 정보를 저장할 Notion 워크스페이스에 연결하세요
+          카카오맵 장소를 저장할 Notion 워크스페이스에 연결하세요
         </p>
       </div>
 

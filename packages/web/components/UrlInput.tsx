@@ -31,7 +31,7 @@ function extractKakaoMapUrl(input: string): string | null {
   return null;
 }
 
-// API route를 통해 URL 검증 및 장소 정보를 가져오는 함수
+// API route를 통해 URL 검증 및 장소를 가져오는 함수
 // Result Type은 @result.json 참고
 async function getPlaceInfo(url: string): Promise<any> {
   try {
@@ -88,7 +88,7 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
         );
       }
 
-      // URL 유효성 검증 및 실제 장소 정보 가져오기
+      // URL 유효성 검증 및 실제 장소 가져오기
       const placeInfo = await getPlaceInfo(extractedUrl);
 
       if (placeInfo && placeInfo.summary) {
@@ -213,7 +213,7 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">예시 URL들:</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">예시 URL:</h3>
         <div className="space-y-2">
           {examples.map((example, index) => (
             <div

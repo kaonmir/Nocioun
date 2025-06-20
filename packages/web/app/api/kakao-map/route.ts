@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 장소 정보 가져오기
+    // 장소 가져오기
     const placeInfo = await getPlaceInfo(url);
     return NextResponse.json(placeInfo);
   } catch (error) {
@@ -27,9 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "장소 정보를 가져올 수 없습니다.",
+          error instanceof Error ? error.message : "장소를 가져올 수 없습니다.",
       },
       { status: 500 }
     );

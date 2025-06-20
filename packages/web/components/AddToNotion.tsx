@@ -97,7 +97,7 @@ export function AddToNotion({
           Notion에 추가하기
         </h2>
         <p className="text-gray-600">
-          장소 정보를 확인하고 Notion 데이터베이스에 저장하세요
+          장소를 확인하고 Notion 데이터베이스에 저장하세요
         </p>
       </div>
 
@@ -110,13 +110,11 @@ export function AddToNotion({
         </div>
       )}
 
-      {/* 장소 정보 미리보기 */}
+      {/* 장소 미리보기 */}
       <div className="mb-6 p-6 bg-gray-50 rounded-lg">
         <div className="flex items-center mb-4">
           <span className="text-2xl mr-3">📍</span>
-          <h3 className="text-lg font-semibold text-gray-900">
-            장소 정보 미리보기
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">장소 미리보기</h3>
         </div>
 
         <div className="space-y-3">
