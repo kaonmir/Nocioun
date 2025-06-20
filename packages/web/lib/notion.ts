@@ -1,12 +1,15 @@
 import { Client } from "@notionhq/client";
 import { NotionDatabase, NotionProperty } from "@/types/notion";
-import { PlaceData } from "../../../core/map/properties/types";
+import { PlaceData } from "../../core/map/properties/columns";
 import {
   generateColumnProperties,
-  convertPlaceDataToNotionProperties,
   validateColumnTypes as validateColumns,
   findMissingColumns,
-} from "../../../core/map/properties/columns";
+} from "../../core/map/properties/columns";
+import {
+  convertPlaceDataToNotionProperties,
+  createNotionBlocks,
+} from "../../core/map/properties/place-converter";
 
 export class NotionService {
   private client: Client;
@@ -24,6 +27,7 @@ export class NotionService {
           property: "object",
           value: "database",
         },
+        page_size: 20,
       });
 
       return response.results.map((db: any) => ({
@@ -125,12 +129,20 @@ export class NotionService {
         placeData,
         titlePropertyName
       );
+      const blocks = createNotionBlocks(placeData);
 
       await this.client.pages.create({
         parent: {
           database_id: databaseId,
         },
         properties,
+        children: blocks,
+        cover: {
+          type: "external",
+          external: {
+            url: placeData.photo_url,
+          },
+        },
       });
     } catch (error) {
       console.error("Error adding place to database:", error);

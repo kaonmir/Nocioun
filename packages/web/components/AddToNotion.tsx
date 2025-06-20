@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { NotionDatabase } from "@/types/notion";
+import { DatabaseIcon } from "./DatabaseIcon";
 
 interface AddToNotionProps {
   database: NotionDatabase;
@@ -48,10 +49,6 @@ export function AddToNotion({
       }
 
       setSuccess(true);
-      // 자동으로 다음 단계로 이동하지 않음
-      // setTimeout(() => {
-      //   onPlaceAdded();
-      // }, 2000);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
@@ -65,7 +62,7 @@ export function AddToNotion({
     return (
       <div className="text-center py-8">
         <div className="text-green-500 text-6xl mb-4">🎉</div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
           성공적으로 추가되었습니다!
         </h3>
         <p className="text-gray-600 mb-6">
@@ -76,7 +73,7 @@ export function AddToNotion({
         <div className="flex justify-center space-x-4">
           <button
             onClick={onAddMore}
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 font-medium"
           >
             더 추가하기
           </button>
@@ -84,7 +81,7 @@ export function AddToNotion({
             href={`https://notion.so/${database.id.replace(/-/g, "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition duration-200"
+            className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition duration-200 font-medium"
           >
             Notion에서 보기 →
           </a>
@@ -106,35 +103,45 @@ export function AddToNotion({
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+          <div className="flex items-center">
+            <span className="text-red-500 mr-2">❌</span>
+            <p className="text-red-700">{error}</p>
+          </div>
         </div>
       )}
 
       {/* 장소 정보 미리보기 */}
       <div className="mb-6 p-6 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          장소 정보 미리보기
-        </h3>
+        <div className="flex items-center mb-4">
+          <span className="text-2xl mr-3">📍</span>
+          <h3 className="text-lg font-semibold text-gray-900">
+            장소 정보 미리보기
+          </h3>
+        </div>
 
-        <div className="space-y-4">
-          <div className="flex">
-            <div className="w-20 text-sm font-medium text-gray-600">
+        <div className="space-y-3">
+          <div className="flex items-start">
+            <div className="w-16 text-sm font-medium text-gray-600 flex-shrink-0">
               장소명:
             </div>
-            <div className="flex-1 text-sm text-gray-900">
+            <div className="flex-1 text-sm text-gray-900 font-medium">
               {placeInfo.summary.name}
             </div>
           </div>
 
-          <div className="flex">
-            <div className="w-20 text-sm font-medium text-gray-600">주소:</div>
+          <div className="flex items-start">
+            <div className="w-16 text-sm font-medium text-gray-600 flex-shrink-0">
+              주소:
+            </div>
             <div className="flex-1 text-sm text-gray-900">
               {placeInfo.summary.address.disp}
             </div>
           </div>
 
-          <div className="flex">
-            <div className="w-20 text-sm font-medium text-gray-600">링크:</div>
+          <div className="flex items-start">
+            <div className="w-16 text-sm font-medium text-gray-600 flex-shrink-0">
+              링크:
+            </div>
             <div className="flex-1 text-sm text-blue-600 font-mono break-all">
               {url}
             </div>
@@ -143,24 +150,49 @@ export function AddToNotion({
       </div>
 
       {/* 데이터베이스 정보 */}
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h4 className="font-medium text-gray-900 mb-2">저장될 데이터베이스</h4>
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-3">
-            <span className="text-sm">📊</span>
+      <div className="mb-6 p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition duration-200">
+        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+          <span className="mr-2">📊</span>
+          저장할 데이터베이스
+        </h4>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <DatabaseIcon database={database} className="mr-3" />
+            <div>
+              <p className="font-medium text-gray-900">{database.title}</p>
+              <p className="text-sm text-gray-500">{database.description}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-gray-900">{database.title}</p>
-            <p className="text-sm text-gray-500">
-              {Object.keys(database.properties).length}개의 컬럼
-            </p>
-          </div>
+          <a
+            href={`https://notion.so/${database.id.replace(/-/g, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-8 h-8 hover:bg-blue-50 rounded-lg transition-colors duration-200 group"
+            title="데이터베이스 열기"
+          >
+            <svg
+              className="w-4 h-4 text-gray-400 group-hover:text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
         </div>
       </div>
 
       {/* 추가될 정보 설명 */}
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-2">📝 추가될 정보</h4>
+        <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+          <span className="mr-2">📝</span>
+          추가될 정보
+        </h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• 장소명: {placeInfo.summary.name} (기존 Title 컬럼에 저장)</li>
           <li>• 주소: {placeInfo.summary.address.disp}</li>
@@ -174,7 +206,7 @@ export function AddToNotion({
         <button
           onClick={handleAddToNotion}
           disabled={adding}
-          className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 font-medium"
         >
           {adding ? (
             <span className="flex items-center justify-center">
@@ -201,14 +233,14 @@ export function AddToNotion({
               Notion에 추가 중...
             </span>
           ) : (
-            "✅ Notion에 추가하기"
+            "Notion에 추가하기"
           )}
         </button>
 
         <button
           onClick={onBack}
           disabled={adding}
-          className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition duration-200"
+          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition duration-200 font-medium"
         >
           ← 뒤로가기
         </button>

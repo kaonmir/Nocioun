@@ -383,10 +383,32 @@ describe("카카오맵 모듈 테스트", () => {
       ).rejects.toThrow("Unsupported URL format");
     });
 
-    test("map.kakao.com itemId 형식은 아직 지원하지 않는다는 에러를 던져야 한다", async () => {
-      await expect(
-        getPlaceInfo("https://map.kakao.com/?itemId=123456")
-      ).rejects.toThrow("map.kakao.com itemId format is not yet supported");
+    test("map.kakao.com itemId 형식을 지원해야 한다", async () => {
+      const mockResponse = { test: "data" };
+      mockFetch.mockReturnValueOnce(createMockResponse(mockResponse));
+
+      const result = await getPlaceInfo("https://map.kakao.com/?itemId=123456");
+
+      expect(result).toEqual(mockResponse);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://place-api.map.kakao.com/places/panel3/123456",
+        expect.any(Object)
+      );
+    });
+
+    test("map.kakao.com 복잡한 쿼리 파라미터가 있는 형식을 지원해야 한다", async () => {
+      const mockResponse = { test: "data" };
+      mockFetch.mockReturnValueOnce(createMockResponse(mockResponse));
+
+      const result = await getPlaceInfo(
+        "https://map.kakao.com/?map_type=TYPE_MAP&itemId=1536087877&urlLevel=3"
+      );
+
+      expect(result).toEqual(mockResponse);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://place-api.map.kakao.com/places/panel3/1536087877",
+        expect.any(Object)
+      );
     });
   });
 });

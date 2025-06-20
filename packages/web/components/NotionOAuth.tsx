@@ -13,8 +13,8 @@ export function NotionOAuth({ onSuccess }: NotionOAuthProps) {
   return (
     <div className="text-center">
       <div className="mb-6">
-        <div className="mx-auto w-20 h-20 bg-black rounded-lg flex items-center justify-center mb-4">
-          <span className="text-white text-2xl font-bold">N</span>
+        <div className="mx-auto w-20 h-20 flex items-center justify-center mb-4">
+          <img src="/icons/notion.svg" alt="Notion" className="w-16 h-16" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Notion과 연결하기

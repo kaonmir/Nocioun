@@ -1,5 +1,4 @@
 import { people_v1 } from "googleapis";
-import { OAuth2Client } from "googleapis-common";
 
 interface SyncResult {
   people: people_v1.Schema$Person[];

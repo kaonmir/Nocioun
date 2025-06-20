@@ -1,104 +1,44 @@
-import { PlaceData } from "./types";
+// PlaceData 타입을 이 파일에서 정의합니다
 
 /**
  * Notion 데이터베이스에서 사용하는 컬럼 정의
  */
 export const REQUIRED_COLUMNS = [
-  "address",
-  "homepage",
-  "phone_number",
-  "link",
-  "nav_link",
+  {
+    key: "address",
+    label: "주소",
+    type: "rich_text",
+    description: "장소의 상세 주소",
+  },
+  {
+    key: "homepage",
+    label: "홈페이지",
+    type: "url",
+    description: "장소 공식 웹사이트 URL",
+  },
+  {
+    key: "phone_number",
+    label: "전화번호",
+    type: "phone_number",
+    description: "연락처 정보",
+  },
+  {
+    key: "link",
+    label: "지도 링크",
+    type: "url",
+    description: "카카오맵 원본 링크",
+  },
 ] as const;
 
-export type RequiredColumnName = (typeof REQUIRED_COLUMNS)[number];
-
 /**
- * 각 컬럼의 Notion 속성 타입 정의
+ * 장소 데이터 인터페이스
+ * REQUIRED_COLUMNS 정의를 기반으로 타입 안전성을 보장합니다.
  */
-export const COLUMN_TYPE_MAP: Record<RequiredColumnName, any> = {
-  address: { rich_text: {} },
-  homepage: { url: {} },
-  phone_number: { phone_number: {} },
-  link: { url: {} },
-  nav_link: { url: {} },
-};
-
-/**
- * 컬럼 타입 검증을 위한 예상 타입 맵
- */
-export const EXPECTED_COLUMN_TYPES: Record<RequiredColumnName, string> = {
-  address: "rich_text",
-  homepage: "url",
-  phone_number: "phone_number",
-  link: "url",
-  nav_link: "url",
-};
-
-/**
- * PlaceData를 Notion 속성으로 변환하는 함수
- */
-export function convertPlaceDataToNotionProperties(
-  placeData: PlaceData,
-  titlePropertyName: string
-): Record<string, any> {
-  const properties: Record<string, any> = {};
-
-  // 장소명 (Title 속성 사용)
-  if (placeData.name) {
-    properties[titlePropertyName] = {
-      title: [
-        {
-          text: {
-            content: placeData.name,
-          },
-        },
-      ],
-    };
-  }
-
-  // 주소
-  if (placeData.address) {
-    properties.address = {
-      rich_text: [
-        {
-          text: {
-            content: placeData.address,
-          },
-        },
-      ],
-    };
-  }
-
-  // 홈페이지
-  if (placeData.homepage) {
-    properties.homepage = {
-      url: placeData.homepage,
-    };
-  }
-
-  // 전화번호
-  if (placeData.phone_number) {
-    properties.phone_number = {
-      phone_number: placeData.phone_number,
-    };
-  }
-
-  // 링크
-  if (placeData.link) {
-    properties.link = {
-      url: placeData.link,
-    };
-  }
-
-  // 네비게이션 링크
-  if (placeData.nav_link) {
-    properties.nav_link = {
-      url: placeData.nav_link,
-    };
-  }
-
-  return properties;
+export interface PlaceData
+  extends Record<(typeof REQUIRED_COLUMNS)[number]["key"], any> {
+  name: string;
+  place_id: string;
+  photo_url: string;
 }
 
 /**
@@ -109,11 +49,12 @@ export function generateColumnProperties(
 ): Record<string, any> {
   const properties: Record<string, any> = {};
 
-  columnsToAdd.forEach((column) => {
-    if (column in COLUMN_TYPE_MAP) {
-      properties[column] = COLUMN_TYPE_MAP[column as RequiredColumnName];
+  for (const column of columnsToAdd) {
+    const requiredColumn = REQUIRED_COLUMNS.find((col) => col.key === column);
+    if (requiredColumn) {
+      properties[column] = { [requiredColumn.type]: {} };
     }
-  });
+  }
 
   return properties;
 }
@@ -122,7 +63,9 @@ export function generateColumnProperties(
  * 누락된 컬럼 찾기
  */
 export function findMissingColumns(existingColumns: string[]): string[] {
-  return REQUIRED_COLUMNS.filter((col) => !existingColumns.includes(col));
+  return REQUIRED_COLUMNS.map((col) => col.key).filter(
+    (col) => !existingColumns.includes(col)
+  );
 }
 
 /**
@@ -143,19 +86,16 @@ export function validateColumnTypes(
     currentType: string;
     expectedType: string;
   }> = [];
-
-  Object.entries(EXPECTED_COLUMN_TYPES).forEach(
-    ([columnName, expectedType]) => {
-      const property = properties[columnName];
-      if (property && property.type !== expectedType) {
-        invalidColumns.push({
-          name: columnName,
-          currentType: property.type,
-          expectedType: expectedType,
-        });
-      }
+  for (const { key, type } of REQUIRED_COLUMNS) {
+    const property = properties[key];
+    if (property && property.type !== type) {
+      invalidColumns.push({
+        name: key,
+        currentType: property.type,
+        expectedType: type,
+      });
     }
-  );
+  }
 
   return {
     isValid: invalidColumns.length === 0,

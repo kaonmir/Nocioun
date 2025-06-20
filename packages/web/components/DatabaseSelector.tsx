@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { NotionDatabase } from "@/types/notion";
+import { DatabaseIcon } from "./DatabaseIcon";
 
 interface DatabaseSelectorProps {
   onDatabaseSelected: (database: NotionDatabase) => void;
@@ -82,6 +83,9 @@ export function DatabaseSelector({
         <p className="text-gray-600">
           카카오맵 장소 정보를 저장할 Notion 데이터베이스를 선택하세요
         </p>
+        <p className="text-sm text-gray-500 mt-1">
+          최근 수정된 데이터베이스 20개를 불러옵니다.
+        </p>
       </div>
 
       {databases.length === 0 ? (
@@ -112,9 +116,10 @@ export function DatabaseSelector({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-3 group-hover:bg-blue-100">
-                    <span className="text-sm">📊</span>
-                  </div>
+                  <DatabaseIcon
+                    database={database}
+                    className="mr-3 group-hover:bg-blue-100"
+                  />
                   <div>
                     <h3 className="font-medium text-gray-900 group-hover:text-blue-700">
                       {database.title}

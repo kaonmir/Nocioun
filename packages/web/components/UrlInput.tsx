@@ -17,6 +17,8 @@ function extractKakaoMapUrl(input: string): string | null {
     /https?:\/\/kko\.kakao\.com\/[a-zA-Z0-9]+/g,
     // 모바일 카카오맵 URL
     /https?:\/\/m\.place\.map\.kakao\.com\/\d+/g,
+    // map.kakao.com itemId 형식 URL
+    /https?:\/\/map\.kakao\.com\/[^?\s]*\?[^?\s]*itemId=\d+[^?\s]*/g,
   ];
 
   for (const pattern of urlPatterns) {
@@ -115,19 +117,24 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
 
   const examples = [
     {
-      type: "일반 URL",
-      url: "https://place.map.kakao.com/26573290",
-      description: "성남시 판교어린이도서관",
+      type: "일반 링크",
+      url: "https://place.map.kakao.com/2035117814",
+      description: "두부공방",
     },
     {
-      type: "단축 URL",
+      type: "지도 링크",
+      url: "https://map.kakao.com/?map_type=TYPE_MAP&itemId=1452114214&urlLevel=3",
+      description: "밥식구",
+    },
+    {
+      type: "단축 링크",
       url: "https://kko.kakao.com/RuZUTLJ96t",
-      description: "하노이스토리 (맛집임 레알)",
+      description: "하노이스토리",
     },
     {
       type: "공유 링크",
-      url: "[카카오맵] 백현중학교 https://kko.kakao.com/jI38cVt8Lj",
-      description: "백현중학교",
+      url: "[카카오맵] 모던샤브하우스 센트럴시티점 https://kko.kakao.com/lQsjQ16u3V",
+      description: "모던샤브하우스 센트럴시티점",
     },
   ];
 
@@ -265,7 +272,10 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
         <ul className="text-xs text-gray-600 space-y-1">
           <li>• 일반 카카오맵 링크: https://place.map.kakao.com/숫자ID</li>
           <li>• 카카오 단축 링크: https://kko.kakao.com/단축코드</li>
-          <li>• 텍스트에 포함된 링크: "[카카오맵] 장소명 https://..."</li>
+          <li>• map.kakao.com 링크: https://map.kakao.com/?itemId=숫자ID</li>
+          <li>
+            • 텍스트에 포함된 링크: &quot;[카카오맵] 장소명 https://...&quot;
+          </li>
         </ul>
       </div>
     </div>

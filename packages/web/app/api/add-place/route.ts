@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NotionService } from "@/lib/notion";
-import { convertPlaceInfoToNotionData } from "../../../../../core/map/properties/place-converter";
+import { convertPlaceInfoToNotionData } from "../../../../core/map/properties/place-converter";
 
 export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get("notion_access_token")?.value;
