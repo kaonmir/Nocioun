@@ -165,8 +165,8 @@ export function MainApp() {
           ))}
         </div>
 
-        {/* 모바일용 세로 레이아웃 */}
-        <div className="md:hidden space-y-3 mb-4">
+        {/* 모바일용 간단한 레이아웃 */}
+        <div className="md:hidden flex justify-center space-x-2 mb-4">
           {[
             { key: "oauth" as Step, label: "Notion 연결", icon: "1" },
             { key: "database" as Step, label: "DB 선택", icon: "2" },
@@ -176,7 +176,7 @@ export function MainApp() {
           ].map((step, index) => (
             <div key={step.key} className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors flex-shrink-0 ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
                   isCurrentStep(step.key)
                     ? "bg-blue-500 text-white"
                     : isStepCompleted(step.key)
@@ -186,21 +186,12 @@ export function MainApp() {
               >
                 {isStepCompleted(step.key) ? "✓" : step.icon}
               </div>
-              <div className="ml-3 flex-1">
-                <span
-                  className={`text-sm font-medium ${
-                    isCurrentStep(step.key)
-                      ? "text-blue-700"
-                      : isStepCompleted(step.key)
-                      ? "text-green-700"
-                      : "text-gray-600"
+              {index < 4 && (
+                <div
+                  className={`w-6 h-0.5 ml-2 transition-colors ${
+                    isStepCompleted(step.key) ? "bg-green-500" : "bg-gray-300"
                   }`}
-                >
-                  {step.label}
-                </span>
-              </div>
-              {isCurrentStep(step.key) && (
-                <div className="text-blue-500 text-xs font-medium">진행 중</div>
+                ></div>
               )}
             </div>
           ))}
