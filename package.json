@@ -18,8 +18,12 @@
     "cli": "pnpm --filter=nocioun cli"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.8.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.0"
   },
   "engines": {
     "node": ">=18.0.0"
