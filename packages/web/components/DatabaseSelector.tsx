@@ -114,11 +114,11 @@ export function DatabaseSelector({
               onClick={() => handleDatabaseSelect(database)}
               className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition duration-200 group"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start">
                   <DatabaseIcon
                     database={database}
-                    className="mr-3 group-hover:bg-blue-100"
+                    className="mr-3 group-hover:bg-blue-100 flex-shrink-0"
                   />
                   <div>
                     <h3 className="font-medium text-gray-900 group-hover:text-blue-700">
