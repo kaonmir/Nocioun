@@ -122,7 +122,7 @@ export function MainApp() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 break-keep">
       {/* 진행 상태 표시 */}
       <div className="mb-8">
         {/* 데스크톱용 가로 레이아웃 */}
