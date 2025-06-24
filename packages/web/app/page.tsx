@@ -63,7 +63,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             {/* Logo/Brand */}
             <div className="mb-8">
@@ -113,7 +113,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <div className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center mb-16">
             <h3 className="text-4xl font-bold text-gray-900 mb-4">
@@ -157,7 +157,7 @@ export default function HomePage() {
 
       {/* Stats Section */}
       <div className="py-24 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-white">
             <div>
               <div className="text-5xl font-bold mb-2">6+</div>
@@ -180,7 +180,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <div className="py-24 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-4xl font-bold text-gray-900 mb-6">
             지금 시작하세요
           </h3>
@@ -198,7 +198,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h4 className="text-2xl font-bold mb-4">Nocioun</h4>
             <p className="text-gray-400 mb-6">

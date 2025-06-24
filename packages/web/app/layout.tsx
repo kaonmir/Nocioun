@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className={inter.className}>
         <Theme>
-          <main className="container mx-auto">{children}</main>
+          <main>{children}</main>
         </Theme>
         <Toaster />
       </body>
