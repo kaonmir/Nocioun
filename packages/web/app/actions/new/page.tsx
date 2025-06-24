@@ -23,7 +23,7 @@ const actions = [
     title: "지도 연동",
     description: "카카오맵 장소 정보를 Notion 데이터베이스에 저장하세요",
     icon: TargetIcon,
-    href: "/actions/map",
+    href: "/actions/new/map",
     color: "bg-green-50 text-green-600",
     available: true,
   },

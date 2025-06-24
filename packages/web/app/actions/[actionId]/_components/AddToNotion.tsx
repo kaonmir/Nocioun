@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { NotionDatabase } from "@/types/notion";
-import { DatabaseIcon } from "./DatabaseIcon";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { DatabaseIcon } from "../../../../components/notion/DatabaseIcon";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -14,13 +14,15 @@ import {
 import { CheckIcon, ReloadIcon, ExternalLinkIcon } from "@radix-ui/react-icons";
 
 interface AddToNotionProps {
-  database: NotionDatabase;
+  database: DatabaseObjectResponse;
   url: string;
   placeInfo: any; // @result.json 참고
   onPlaceAdded: () => void;
   onBack: () => void;
   onAddMore: () => void;
   onChangeDatabase: () => void;
+  hideBackButton?: boolean;
+  compact?: boolean;
 }
 
 export function AddToNotion({
@@ -31,6 +33,8 @@ export function AddToNotion({
   onBack,
   onAddMore,
   onChangeDatabase,
+  hideBackButton = false,
+  compact = false,
 }: AddToNotionProps) {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string>("");
@@ -71,7 +75,7 @@ export function AddToNotion({
 
   if (success) {
     return (
-      <Card className="border-none">
+      <Card className={compact ? "border-none shadow-none" : "border-none"}>
         <CardContent className="text-center py-8 space-y-6">
           <div className="text-green-500 text-6xl">🎉</div>
           <div>
@@ -88,7 +92,7 @@ export function AddToNotion({
             <Button onClick={onAddMore}>더 추가하기</Button>
             <Button asChild variant="secondary">
               <a
-                href={`https://notion.so/${database.id.replace(/-/g, "")}`}
+                href={`https://notion.so/${database.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -103,13 +107,15 @@ export function AddToNotion({
   }
 
   return (
-    <Card className="border-none">
-      <CardHeader className="text-center">
-        <CardTitle>Notion에 추가하기</CardTitle>
-        <CardDescription>
-          장소를 확인하고 Notion 데이터베이스에 저장하세요
-        </CardDescription>
-      </CardHeader>
+    <Card className={compact ? "border-none shadow-none" : "border-none"}>
+      {!compact && (
+        <CardHeader className="text-center">
+          <CardTitle>Notion에 추가하기</CardTitle>
+          <CardDescription>
+            장소를 확인하고 Notion 데이터베이스에 저장하세요
+          </CardDescription>
+        </CardHeader>
+      )}
 
       <CardContent className="space-y-6">
         {error && (
@@ -177,11 +183,13 @@ export function AddToNotion({
             </h4>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <DatabaseIcon database={database} className="mr-3" />
+                <DatabaseIcon icon={database.icon} className="mr-3" />
                 <div>
-                  <p className="font-medium text-gray-900">{database.title}</p>
+                  <p className="font-medium text-gray-900">
+                    {database.title?.[0]?.plain_text}
+                  </p>
                   <p className="text-sm text-gray-500">
-                    {database.description}
+                    {database.description?.[0]?.plain_text}
                   </p>
                 </div>
               </div>
@@ -211,11 +219,13 @@ export function AddToNotion({
         </Card>
 
         {/* 액션 버튼들 */}
-        <div className="flex space-x-3">
+        <div
+          className={`flex space-x-3 ${hideBackButton ? "justify-center" : ""}`}
+        >
           <Button
             onClick={handleAddToNotion}
             disabled={adding}
-            className="flex-1"
+            className={hideBackButton ? "" : "flex-1"}
           >
             {adding ? (
               <>
@@ -227,9 +237,11 @@ export function AddToNotion({
             )}
           </Button>
 
-          <Button onClick={onBack} disabled={adding} variant="outline">
-            뒤로가기
-          </Button>
+          {!hideBackButton && (
+            <Button onClick={onBack} disabled={adding} variant="outline">
+              뒤로가기
+            </Button>
+          )}
         </div>
 
         {/* 참고 사항 */}

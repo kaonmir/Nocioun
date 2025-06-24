@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { NotionDatabase } from "@/types/notion";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { REQUIRED_COLUMNS } from "@/core/map/properties/columns";
-import { DatabaseIcon } from "./DatabaseIcon";
+import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 } from "@radix-ui/react-icons";
 
 interface ColumnCheckerProps {
-  database: NotionDatabase;
+  database: DatabaseObjectResponse;
   onColumnsReady: () => void;
   onBack: () => void;
 }
@@ -161,10 +161,14 @@ export function ColumnChecker({
     <Card variant="ghost" className="bg-gray-50 mb-6">
       <CardContent className="p-4">
         <div className="flex items-center">
-          <DatabaseIcon database={database} className="mr-3" />
+          <DatabaseIcon icon={database.icon} className="mr-3" />
           <div>
-            <p className="font-medium text-gray-900">{database.title}</p>
-            <p className="text-sm text-gray-500">{database.description}</p>
+            <p className="font-medium text-gray-900">
+              {database.title?.[0]?.plain_text}
+            </p>
+            <p className="text-sm text-gray-500">
+              {database.description?.[0]?.plain_text}
+            </p>
           </div>
         </div>
       </CardContent>
@@ -306,7 +310,7 @@ export function ColumnChecker({
 
           <Button asChild variant="secondary" className="flex-1">
             <a
-              href={`https://notion.so/${database.id.replace(/-/g, "")}`}
+              href={`https://notion.so/${database.id}`}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -77,9 +78,11 @@ export default function LoginPage() {
         <Card className="border-none shadow-lg">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 rounded-lg flex items-center justify-center">
-              <img
+              <Image
                 src="/icons/notion.svg"
                 alt="Notion"
+                width={64}
+                height={64}
                 className="w-16 h-16 object-contain"
               />
             </div>
@@ -103,9 +106,11 @@ export default function LoginPage() {
                 </>
               ) : (
                 <div className="flex items-center justify-center">
-                  <img
+                  <Image
                     src="/icons/notion.svg"
                     alt="Notion"
+                    width={20}
+                    height={20}
                     className="w-5 h-5 object-contain mr-2"
                   />
                   Notion으로 계속하기

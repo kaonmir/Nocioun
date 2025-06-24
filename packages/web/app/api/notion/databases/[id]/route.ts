@@ -1,58 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
-import { NotionService } from "@/lib/notion";
+import { Client } from "@notionhq/client";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const accessToken = request.cookies.get("notion_access_token")?.value;
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
   try {
-    const notionService = new NotionService(accessToken);
-    const result = await notionService.getDatabaseInfo(params.id);
+    const supabase = createClient();
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("Error fetching database:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch database" },
-      { status: 500 }
-    );
-  }
-}
+    // 현재 사용자 정보 가져오기
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const accessToken = request.cookies.get("notion_access_token")?.value;
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  try {
-    const { columnsToAdd } = await request.json();
-
-    if (!Array.isArray(columnsToAdd) || columnsToAdd.length === 0) {
+    if (userError || !user) {
       return NextResponse.json(
-        { error: "Invalid columns to add" },
+        { error: "인증되지 않은 사용자입니다." },
+        { status: 401 }
+      );
+    }
+
+    // 사용자 메타데이터에서 Notion access token 가져오기
+    const notionAccessToken = user.user_metadata?.notion_access_token;
+
+    if (!notionAccessToken) {
+      return NextResponse.json(
+        { error: "Notion 연동이 필요합니다. 다시 로그인해주세요." },
         { status: 400 }
       );
     }
 
-    const notionService = new NotionService(accessToken);
-    await notionService.addColumnsToDatabase(params.id, columnsToAdd);
+    // Notion 클라이언트 초기화
+    const notion = new Client({
+      auth: notionAccessToken,
+    });
 
-    return NextResponse.json({ success: true });
+    // 데이터베이스 정보 가져오기
+    const response = await notion.databases.retrieve({
+      database_id: params.id,
+    });
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error adding columns:", error);
+    console.error("Notion database fetch error:", error);
+
+    // Notion API 에러가 인증 관련인 경우
+    if (error instanceof Error && error.message.includes("Unauthorized")) {
+      return NextResponse.json(
+        {
+          error:
+            "Notion 토큰이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.",
+        },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to add columns" },
+      { error: "데이터베이스 정보를 가져오는 중 오류가 발생했습니다." },
       { status: 500 }
     );
   }

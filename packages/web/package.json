@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "types:generate": "source .env && supabase gen types typescript --project-id $NEXT_PUBLIC_SUPABASE_PROJECT_ID > types/supabase.ts",
+    "types:local": "supabase gen types typescript --local > types/supabase.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -41,6 +43,7 @@
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
     "postcss": "^8.4.0",
+    "supabase": "^2.26.9",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.0.0"
   }

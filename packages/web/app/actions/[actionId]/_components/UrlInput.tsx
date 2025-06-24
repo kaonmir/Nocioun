@@ -16,6 +16,8 @@ import { ReloadIcon, CheckIcon, ClipboardIcon } from "@radix-ui/react-icons";
 interface UrlInputProps {
   onUrlValidated: (url: string, validationData: any) => void;
   onBack: () => void;
+  hideBackButton?: boolean;
+  compact?: boolean;
 }
 
 // 카카오맵 URL을 추출하는 함수
@@ -75,7 +77,12 @@ async function getPlaceInfo(url: string): Promise<any> {
   }
 }
 
-export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
+export function UrlInput({
+  onUrlValidated,
+  onBack,
+  hideBackButton = false,
+  compact = false,
+}: UrlInputProps) {
   const [url, setUrl] = useState("");
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string>("");
@@ -150,16 +157,18 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
   ];
 
   return (
-    <Card className="border-none">
-      <CardHeader className="text-center">
-        <CardTitle>카카오맵 링크 입력하기</CardTitle>
-        <CardDescription>
-          저장할 장소의 카카오맵 링크를 입력해 주세요.
-        </CardDescription>
-        <p className="text-gray-600 text-sm">
-          앱에서 <b>공유 {">"} URL 복사</b>를 눌러 링크를 붙여넣어 주세요!
-        </p>
-      </CardHeader>
+    <Card className={compact ? "border-none shadow-none" : "border-none"}>
+      {!compact && (
+        <CardHeader className="text-center">
+          <CardTitle>카카오맵 링크 입력하기</CardTitle>
+          <CardDescription>
+            저장할 장소의 카카오맵 링크를 입력해 주세요.
+          </CardDescription>
+          <p className="text-gray-600 text-sm">
+            앱에서 <b>공유 {">"} URL 복사</b>를 눌러 링크를 붙여넣어 주세요!
+          </p>
+        </CardHeader>
+      )}
 
       <CardContent className="space-y-6">
         {error && (
@@ -202,43 +211,47 @@ export function UrlInput({ onUrlValidated, onBack }: UrlInputProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-700">예시 URL:</h3>
-          <div className="space-y-2">
-            {examples.map((example, index) => (
-              <Card
-                key={index}
-                className="cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors group overflow-hidden"
-                onClick={() => handleExampleClick(example.url)}
-              >
-                <CardContent className="p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0 pr-3">
-                      <div className="flex items-center flex-wrap gap-2 mb-2">
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex-shrink-0">
-                          {example.type}
-                        </span>
-                        <span className="text-xs text-gray-500 truncate">
-                          {example.description}
-                        </span>
+        {!compact && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-700">예시 URL:</h3>
+            <div className="space-y-2">
+              {examples.map((example, index) => (
+                <Card
+                  key={index}
+                  className="cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors group overflow-hidden"
+                  onClick={() => handleExampleClick(example.url)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0 pr-3">
+                        <div className="flex items-center flex-wrap gap-2 mb-2">
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex-shrink-0">
+                            {example.type}
+                          </span>
+                          <span className="text-xs text-gray-500 truncate">
+                            {example.description}
+                          </span>
+                        </div>
+                        <p className="text-sm font-mono text-gray-700 group-hover:text-blue-700 break-all leading-relaxed">
+                          {example.url}
+                        </p>
                       </div>
-                      <p className="text-sm font-mono text-gray-700 group-hover:text-blue-700 break-all leading-relaxed">
-                        {example.url}
-                      </p>
+                      <ClipboardIcon className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
                     </div>
-                    <ClipboardIcon className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex justify-center">
-          <Button variant="outline" onClick={onBack}>
-            ← 이전으로
-          </Button>
-        </div>
+        {!hideBackButton && (
+          <div className="flex justify-center">
+            <Button variant="outline" onClick={onBack}>
+              ← 이전으로
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

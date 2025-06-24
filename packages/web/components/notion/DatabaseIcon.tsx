@@ -1,20 +1,21 @@
-import { NotionDatabase } from "@/types/notion";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import Image from "next/image";
 
 interface DatabaseIconProps {
-  database: NotionDatabase;
+  icon: DatabaseObjectResponse["icon"];
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 export function DatabaseIcon({
-  database,
+  icon,
   size = "md",
   className = "",
 }: DatabaseIconProps) {
   const sizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
+    sm: "h-4",
+    md: "h-8",
+    lg: "h-12",
   };
 
   const iconSizeClasses = {
@@ -33,14 +34,16 @@ export function DatabaseIcon({
     <div
       className={`${sizeClasses[size]} bg-gray-100 rounded flex items-center justify-center ${className}`}
     >
-      {database.icon?.type === "external" ? (
-        <img
-          src={database.icon.external.url}
+      {icon?.type === "external" ? (
+        <Image
+          src={icon.external.url}
           alt=""
+          width={16}
+          height={16}
           className={iconSizeClasses[size]}
         />
-      ) : database.icon?.type === "emoji" ? (
-        <span className={textSizeClasses[size]}>{database.icon.emoji}</span>
+      ) : icon?.type === "emoji" ? (
+        <span className={textSizeClasses[size]}>{icon.emoji}</span>
       ) : (
         <div
           className="notion-record-icon notranslate"

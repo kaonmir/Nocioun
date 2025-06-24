@@ -6,6 +6,13 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createClient();
 
+    // URL에서 limit 파라미터 가져오기
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+
+    // limit 값 검증 (1-100 사이로 제한)
+    const pageSize = Math.min(Math.max(limit, 1), 100);
+
     // 현재 사용자 정보 가져오기
     const {
       data: { user },
@@ -40,20 +47,10 @@ export async function GET(request: NextRequest) {
         value: "database",
         property: "object",
       },
-      page_size: 10,
+      page_size: pageSize,
     });
 
-    // 데이터베이스 정보 정리
-    const databases = response.results.map((db: any) => ({
-      id: db.id,
-      title: db.title?.[0]?.plain_text || "제목 없음",
-      url: db.url,
-      created_time: db.created_time,
-      last_edited_time: db.last_edited_time,
-      properties: Object.keys(db.properties || {}),
-    }));
-
-    return NextResponse.json({ databases });
+    return NextResponse.json(response.results);
   } catch (error) {
     console.error("Notion databases fetch error:", error);
 

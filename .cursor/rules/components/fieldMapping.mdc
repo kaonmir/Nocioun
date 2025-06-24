@@ -1,0 +1,11 @@
+---
+description: 
+globs: packages/web/components/notion/FieldMappingStep.tsx
+alwaysApply: false
+---
+1. 시스템은 각 action 마다 고정된 action fields 목록을 제공한다
+    1. 각 action field에는 name, description, Notion property type, Default Notion prorperty name을 담고 있다.
+2. 사용자는 action field와 notion field를 매핑한다.
+    1. 사용자는 이전 step에서 지정한 Database에 이미 정의되어 있는 field를 선택할 수 있다. 단 이때 notion property type이 일치하는 property만 선택 가능하다.
+    2. 사용자가 notion field input 을 클릭하면 선택 가능한 field 목록과 검색 input이 같이 보인다. 사용자가 검색 input에 검색하면 property를 filter해줌과 동시에 'insert new property' 버튼도 보이도록 한다.
+3. 사용자가 ‘다음’을 누르면 property 생성 작업을 진행한다. (따로 UI 없이 백그라운드로 진행)

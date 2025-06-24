@@ -20,24 +20,21 @@ import {
   CheckIcon,
   TableIcon,
   ExternalLinkIcon,
+  DotsVerticalIcon,
+  PlayIcon,
+  Pencil1Icon,
+  TrashIcon,
 } from "@radix-ui/react-icons";
 import { createClient } from "@/lib/supabase";
-
-interface NotionDatabase {
-  id: string;
-  title: string;
-  url: string;
-  created_time: string;
-  last_edited_time: string;
-  properties: string[];
-}
+import { Action } from "@/types/action";
+import { getActions } from "@/lib/actions";
 
 export default function ActionsPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [databases, setDatabases] = useState<NotionDatabase[]>([]);
-  const [databasesLoading, setDatabasesLoading] = useState(false);
-  const [databasesError, setDatabasesError] = useState<string | null>(null);
+  const [actions, setActions] = useState<Action[]>([]);
+  const [actionsLoading, setActionsLoading] = useState(false);
+  const [actionsError, setActionsError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -49,39 +46,30 @@ export default function ActionsPage() {
       setUser(user);
       setLoading(false);
 
-      // 사용자가 로그인된 경우 데이터베이스 목록 가져오기
       if (user) {
-        await fetchNotionDatabases();
+        await fetchActions();
       }
     };
 
     getUser();
   }, [supabase.auth]);
 
-  const fetchNotionDatabases = async () => {
-    setDatabasesLoading(true);
-    setDatabasesError(null);
-
+  const fetchActions = async () => {
     try {
-      const response = await fetch("/api/notion/databases");
-      const data = await response.json();
+      setActionsLoading(true);
+      setActionsError(null);
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "데이터베이스를 가져오는데 실패했습니다."
-        );
-      }
-
-      setDatabases(data.databases || []);
+      const actions = await getActions();
+      setActions(actions);
     } catch (error) {
-      console.error("Error fetching databases:", error);
-      setDatabasesError(
+      console.error("Actions fetch error:", error);
+      setActionsError(
         error instanceof Error
           ? error.message
           : "알 수 없는 오류가 발생했습니다."
       );
     } finally {
-      setDatabasesLoading(false);
+      setActionsLoading(false);
     }
   };
 
@@ -96,6 +84,45 @@ export default function ActionsPage() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const getActionTypeLabel = (type: string) => {
+    switch (type) {
+      case "map":
+        return "카카오맵 연동";
+      default:
+        return type;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "text-green-600 bg-green-100";
+      case "paused":
+        return "text-yellow-600 bg-yellow-100";
+      case "error":
+        return "text-red-600 bg-red-100";
+      case "draft":
+        return "text-gray-600 bg-gray-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return "활성";
+      case "paused":
+        return "일시정지";
+      case "error":
+        return "오류";
+      case "draft":
+        return "초안";
+      default:
+        return status;
+    }
   };
 
   if (loading) {
@@ -161,95 +188,118 @@ export default function ActionsPage() {
                 <GearIcon className="w-5 h-5 mr-2" />내 Actions
               </CardTitle>
               <CardDescription>
-                현재 활성화된 Actions를 관리하세요.
+                총 {actions.length}개의 액션이 있습니다.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" disabled>
-                곧 출시 예정
-              </Button>
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl font-bold">{actions.length}</span>
+                <span className="text-muted-foreground">개의 액션</span>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Notion 데이터베이스 목록 */}
+        {/* 내 Actions 목록 */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                <TableIcon className="w-5 h-5 mr-2" />내 Notion 데이터베이스
-              </CardTitle>
-              <CardDescription>
-                연결된 Notion 워크스페이스의 데이터베이스 목록입니다.
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchNotionDatabases}
-              disabled={databasesLoading}
-            >
-              {databasesLoading ? "새로고침 중..." : "새로고침"}
-            </Button>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <TableIcon className="w-5 h-5 mr-2" />내 Actions
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchActions}
+                disabled={actionsLoading}
+              >
+                {actionsLoading ? "새로고침 중..." : "새로고침"}
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              현재 생성된 모든 액션들을 확인하고 관리하세요.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {databasesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-current border-t-transparent mr-3"></div>
-                <span className="text-muted-foreground">
-                  데이터베이스 목록을 불러오는 중...
-                </span>
-              </div>
-            ) : databasesError ? (
+            {actionsLoading ? (
               <div className="text-center py-8">
-                <p className="text-red-600 mb-4">{databasesError}</p>
-                <Button variant="outline" onClick={fetchNotionDatabases}>
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-current border-t-transparent mx-auto mb-4"></div>
+                <p className="text-muted-foreground">
+                  액션 목록을 불러오는 중...
+                </p>
+              </div>
+            ) : actionsError ? (
+              <div className="text-center py-8">
+                <p className="text-red-600 mb-2">{actionsError}</p>
+                <Button variant="outline" onClick={fetchActions}>
                   다시 시도
                 </Button>
               </div>
-            ) : databases.length === 0 ? (
+            ) : actions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <TableIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>연결된 Notion 데이터베이스가 없습니다.</p>
-                <p className="text-sm mt-2">
-                  Notion 워크스페이스를 먼저 연결해주세요.
+                <p className="text-lg font-medium mb-2">
+                  아직 생성된 액션이 없습니다
                 </p>
+                <p className="text-sm mb-4">
+                  첫 번째 액션을 만들어서 시작해보세요!
+                </p>
+                <Link href="/actions/new">
+                  <Button>
+                    <PlusIcon className="w-4 h-4 mr-2" />첫 액션 만들기
+                  </Button>
+                </Link>
               </div>
             ) : (
-              <div className="space-y-3">
-                {databases.map((database) => (
+              <div className="space-y-4">
+                {actions.map((action) => (
                   <div
-                    key={database.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    key={action.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-center space-x-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <TableIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">
-                          {database.title}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>속성 {database.properties.length}개</span>
-                          <span>
-                            업데이트: {formatDate(database.last_edited_time)}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="font-semibold text-lg">
+                            {getActionTypeLabel(action.type)} -{" "}
+                            {action.properties?.database?.title?.[0]
+                              ?.plain_text || "Notion 데이터베이스"}
+                          </h3>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              action.status
+                            )}`}
+                          >
+                            {getStatusLabel(action.status)}
                           </span>
                         </div>
+
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
+                          <span>생성일: {formatDate(action.created_at)}</span>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Link href={`/actions/${action.id}`}>
+                            <Button variant="outline" size="sm">
+                              <ExternalLinkIcon className="w-4 h-4 mr-1" />
+                              상세보기
+                            </Button>
+                          </Link>
+                          <Link href={`/actions/${action.id}/run`}>
+                            <Button variant="outline" size="sm">
+                              <PlayIcon className="w-4 h-4 mr-1" />
+                              실행하기
+                            </Button>
+                          </Link>
+                          <Button variant="outline" size="sm" disabled>
+                            <Pencil1Icon className="w-4 h-4 mr-1" />
+                            수정
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(database.url, "_blank")}
-                      >
-                        <ExternalLinkIcon className="w-4 h-4 mr-1" />
-                        열기
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <PlusIcon className="w-4 h-4 mr-1" />
-                        Action 생성
+
+                      <Button variant="ghost" size="sm" disabled>
+                        <DotsVerticalIcon className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
@@ -273,51 +323,7 @@ export default function ActionsPage() {
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
               <p>아직 활동 내역이 없습니다.</p>
-              <p className="text-sm mt-2">첫 번째 Action을 만들어보세요!</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 연결된 서비스 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <GearIcon className="w-5 h-5 mr-2" />
-              연결된 서비스
-            </CardTitle>
-            <CardDescription>
-              Notion 및 기타 연결된 서비스들을 관리하세요.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-md">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded flex items-center justify-center border">
-                    <span className="text-sm font-semibold">N</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Notion</p>
-                    <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                      {user?.user_metadata?.notion_access_token ? (
-                        <>
-                          <CheckIcon className="w-3 h-3 text-green-600" />
-                          <span>워크스페이스 연결됨</span>
-                        </>
-                      ) : (
-                        <>
-                          <ExitIcon className="w-3 h-3 text-orange-600" />
-                          <span>연결 필요</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  <GearIcon className="w-4 h-4 mr-1" />
-                  설정
-                </Button>
-              </div>
+              <p className="text-sm mt-2">액션을 실행하면 여기에 표시됩니다!</p>
             </div>
           </CardContent>
         </Card>
