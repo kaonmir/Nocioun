@@ -4,15 +4,15 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
 import { DatabaseIcon } from "./DatabaseIcon";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ReloadIcon,

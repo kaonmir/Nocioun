@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { UrlInput } from "./UrlInput";
 import { AddToNotion } from "./AddToNotion";
-import { Progress } from "@/components/ui/Progress";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { getActionById } from "@/lib/actions";
 

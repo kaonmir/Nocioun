@@ -19,23 +19,24 @@ export const createAction = async (actionData: CreateActionRequest) => {
   const supabase = createClient();
   const { user } = await getAuthenticatedUser(supabase);
 
-  const { type, name, databaseId, config } = actionData;
+  const { type, name, target_id, databaseId, config } = actionData;
 
   // 입력 검증
-  if (!type || !name || !databaseId || !config) {
+  if (!type || !databaseId || !config) {
     throw new Error("필수 필드가 누락되었습니다.");
   }
 
   // 액션 데이터 구성
   const actionRecord = {
     user_id: user.id,
-    name,
     type,
     status: "active",
     properties: {
       ...config,
       databaseId,
     },
+    ...(name && { name }),
+    ...(target_id && { target_id }),
   };
 
   // Supabase actions 테이블에 저장

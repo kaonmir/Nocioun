@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { DatabaseIcon } from "../../../../components/notion/DatabaseIcon";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 import { CheckIcon, ReloadIcon, ExternalLinkIcon } from "@radix-ui/react-icons";
 
 interface AddToNotionProps {

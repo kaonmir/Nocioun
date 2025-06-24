@@ -3,21 +3,36 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   PlusIcon,
   PersonIcon,
   ExitIcon,
   ActivityLogIcon,
   GearIcon,
-  CheckIcon,
   TableIcon,
   ExternalLinkIcon,
   DotsVerticalIcon,
@@ -35,6 +50,9 @@ export default function ActionsPage() {
   const [actions, setActions] = useState<Action[]>([]);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [actionsError, setActionsError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionToDelete, setActionToDelete] = useState<Action | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -76,6 +94,40 @@ export default function ActionsPage() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
+  };
+
+  const handleDeleteAction = (action: Action) => {
+    setActionToDelete(action);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAction = async () => {
+    if (!actionToDelete) return;
+
+    try {
+      setDeleting(true);
+
+      const { error } = await supabase
+        .from("actions")
+        .delete()
+        .eq("id", actionToDelete.id);
+
+      if (error) {
+        throw error;
+      }
+
+      // 성공적으로 삭제되면 액션 목록에서 제거
+      setActions((prev) =>
+        prev.filter((action) => action.id !== actionToDelete.id)
+      );
+      setDeleteDialogOpen(false);
+      setActionToDelete(null);
+    } catch (error) {
+      console.error("Action delete error:", error);
+      // 에러 처리 - 필요시 toast나 alert로 사용자에게 알림
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -261,9 +313,10 @@ export default function ActionsPage() {
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <h3 className="font-semibold text-lg">
-                            {getActionTypeLabel(action.type)} -{" "}
-                            {action.properties?.database?.title?.[0]
-                              ?.plain_text || "Notion 데이터베이스"}
+                            {getActionTypeLabel(action.action_type)} -{" "}
+                            {action.target_type === "database"
+                              ? "Notion 데이터베이스"
+                              : "Notion 페이지"}
                           </h3>
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -275,7 +328,10 @@ export default function ActionsPage() {
                         </div>
 
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
-                          <span>생성일: {formatDate(action.created_at)}</span>
+                          <span>
+                            생성일:{" "}
+                            {formatDate(action.created_at.toISOString())}
+                          </span>
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -298,9 +354,22 @@ export default function ActionsPage() {
                         </div>
                       </div>
 
-                      <Button variant="ghost" size="sm" disabled>
-                        <DotsVerticalIcon className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <DotsVerticalIcon className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteAction(action)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                            삭제
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 ))}
@@ -328,6 +397,41 @@ export default function ActionsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>액션 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말로 이 액션을 삭제하시겠습니까?{" "}
+              {actionToDelete && (
+                <span className="font-semibold">
+                  {getActionTypeLabel(actionToDelete.action_type)} -{" "}
+                  {actionToDelete.target_type === "database"
+                    ? "Notion 데이터베이스"
+                    : "Notion 페이지"}
+                  &quot;
+                </span>
+              )}
+              <br />
+              <span className="text-red-600">
+                이 작업은 되돌릴 수 없습니다.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAction}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

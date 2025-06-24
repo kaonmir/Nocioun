@@ -14,9 +14,10 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           id: string;
-          name: string;
+          name: string | null;
           properties: Json | null;
           status: string;
+          target_id: string | null;
           type: string;
           updated_at: string | null;
           user_id: string;
@@ -25,9 +26,10 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
-          name: string;
+          name?: string | null;
           properties?: Json | null;
           status?: string;
+          target_id?: string | null;
           type: string;
           updated_at?: string | null;
           user_id: string;
@@ -36,9 +38,10 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
-          name?: string;
+          name?: string | null;
           properties?: Json | null;
           status?: string;
+          target_id?: string | null;
           type?: string;
           updated_at?: string | null;
           user_id?: string;

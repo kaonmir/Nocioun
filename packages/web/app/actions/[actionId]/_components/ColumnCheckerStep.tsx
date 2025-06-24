@@ -4,15 +4,15 @@ import { useState, useEffect, useCallback } from "react";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { REQUIRED_COLUMNS } from "@/core/map/properties/columns";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
-import { Progress } from "@/components/ui/Progress";
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   CheckIcon,
   ReloadIcon,

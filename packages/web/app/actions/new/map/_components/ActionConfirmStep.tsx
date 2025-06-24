@@ -1,14 +1,14 @@
 "use client";
 
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 import { DatabaseSelectedCard } from "@/components/notion/DatabaseSelectedCard";
 
 // FieldMapping 타입 정의

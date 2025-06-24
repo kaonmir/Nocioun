@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { Toaster } from "@/components/ui/Toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { Theme } from "@radix-ui/themes";
 
 const inter = Inter({ subsets: ["latin"] });

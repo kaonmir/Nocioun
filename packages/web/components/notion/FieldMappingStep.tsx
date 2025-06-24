@@ -2,23 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import { DatabaseIcon } from "./DatabaseIcon";
-import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
   Cross2Icon,
 } from "@radix-ui/react-icons";
-import { DatabaseSelectedCard } from "./DatabaseSelectedCard";
 import { FieldMapping, ActionField } from "@/types/action";
 
 interface NotionProperty {

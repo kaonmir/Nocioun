@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { DatabaseSelectorDialog } from "@/components/notion/DatabaseSelectorDialog";
 import { FieldMappingStep } from "@/components/notion/FieldMappingStep";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { ReloadIcon, CheckIcon, PlusIcon } from "@radix-ui/react-icons";
 import { FieldMapping } from "@/types/action";

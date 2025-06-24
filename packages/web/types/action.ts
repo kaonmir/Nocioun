@@ -27,9 +27,10 @@ export interface ActionConfig {
 export interface Action {
   id: string;
   user_id: string;
-  name: string;
+  name?: string;
   description?: string;
   type: string;
+  target_id?: string;
   status: "draft" | "active" | "paused" | "error";
   properties: {
     databaseId: string;
@@ -43,7 +44,8 @@ export interface Action {
 
 export interface CreateActionRequest {
   type: string;
-  name: string;
+  name?: string;
+  target_id?: string;
   databaseId: string;
   config: ActionConfig;
 }
