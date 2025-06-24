@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPlaceInfo, isValidKakaoMapUrl } from "../../../../core/map/map";
+import { getPlaceInfo, isValidKakaoMapUrl } from "@/core/map/map";
 
 export async function POST(request: NextRequest) {
   try {

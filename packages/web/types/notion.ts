@@ -4,6 +4,7 @@ export interface NotionDatabase {
   description: string;
   properties: Record<string, NotionProperty>;
   icon: any;
+  url?: string;
 }
 
 export interface NotionProperty {

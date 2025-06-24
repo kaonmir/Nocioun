@@ -2,8 +2,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { NotionDatabase } from "@/types/notion";
-import { REQUIRED_COLUMNS } from "../../core/map/properties/columns";
+import { REQUIRED_COLUMNS } from "@/core/map/properties/columns";
 import { DatabaseIcon } from "./DatabaseIcon";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Progress } from "@/components/ui/Progress";
+import {
+  CheckIcon,
+  ReloadIcon,
+  ExclamationTriangleIcon,
+  Cross2Icon,
+} from "@radix-ui/react-icons";
 
 interface ColumnCheckerProps {
   database: NotionDatabase;
@@ -95,6 +110,13 @@ export function ColumnChecker({
     checkColumns();
   }, [checkColumns]);
 
+  // 모든 컬럼이 준비되면 자동으로 다음 단계로 진행
+  useEffect(() => {
+    if (status === "ready") {
+      onColumnsReady();
+    }
+  }, [status, onColumnsReady]);
+
   const handleAddColumns = async () => {
     try {
       setProcessing(true);
@@ -127,78 +149,72 @@ export function ColumnChecker({
   };
 
   const renderHeader = () => (
-    <div className="text-center mb-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        데이터베이스 컬럼 확인
-      </h2>
-      <p className="text-gray-600">
+    <CardHeader className="text-center">
+      <CardTitle>데이터베이스 컬럼 확인</CardTitle>
+      <CardDescription>
         카카오맵 정보를 저장하기 위해 필요한 컬럼들을 확인합니다.
-      </p>
-    </div>
+      </CardDescription>
+    </CardHeader>
   );
 
   const renderDatabaseInfo = () => (
-    <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 mb-6">
-      <div className="flex items-center">
-        <DatabaseIcon database={database} className="mr-3" />
-        <div>
-          <p className="font-medium text-gray-900">{database.title}</p>
-          <p className="text-sm text-gray-500">{database.description}</p>
+    <Card variant="ghost" className="bg-gray-50 mb-6">
+      <CardContent className="p-4">
+        <div className="flex items-center">
+          <DatabaseIcon database={database} className="mr-3" />
+          <div>
+            <p className="font-medium text-gray-900">{database.title}</p>
+            <p className="text-sm text-gray-500">{database.description}</p>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   const renderLoading = () => (
-    <div className="text-center py-12">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+    <CardContent className="text-center py-12 space-y-4">
+      <ReloadIcon className="animate-spin h-12 w-12 mx-auto text-blue-500" />
       <p className="text-gray-600">데이터베이스 구조를 확인하는 중...</p>
-    </div>
+    </CardContent>
   );
 
   const renderError = () => (
-    <div className="text-center py-8">
-      <div className="text-red-500 text-4xl mb-4">❌</div>
-      <p className="text-red-600 mb-6">{error}</p>
-      <div className="space-x-3">
-        <button
-          onClick={checkColumns}
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-        >
+    <CardContent className="text-center py-8 space-y-4">
+      <Cross2Icon className="text-red-500 text-4xl mx-auto h-16 w-16" />
+      <p className="text-red-600">{error}</p>
+      <div className="flex justify-center space-x-3">
+        <Button onClick={checkColumns} variant="default">
           다시 시도
-        </button>
-        <button
-          onClick={onBack}
-          className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
-        >
+        </Button>
+        <Button onClick={onBack} variant="outline">
           뒤로 가기
-        </button>
+        </Button>
       </div>
-    </div>
+    </CardContent>
   );
 
   const renderReady = () => (
-    <div className="text-center py-8">
-      <div className="text-green-500 text-6xl mb-4">✅</div>
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">완벽합니다!</h3>
-      <p className="text-gray-600 mb-6">모든 필요한 컬럼이 준비되었습니다.</p>
+    <CardContent className="text-center py-8 space-y-6">
+      <CheckIcon className="text-green-500 mx-auto h-16 w-16" />
+      <div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">완벽합니다!</h3>
+        <p className="text-gray-600">모든 필요한 컬럼이 준비되었습니다.</p>
+      </div>
 
-      <button
-        onClick={onColumnsReady}
-        className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 font-medium"
-      >
+      <Button onClick={onColumnsReady} size="lg">
         다음 단계로 계속
-      </button>
+      </Button>
 
-      <div className="mt-4">
-        <button
+      <div>
+        <Button
+          variant="ghost"
           onClick={onBack}
-          className="text-gray-500 hover:text-gray-700 text-sm"
+          className="text-gray-500 hover:text-gray-700"
         >
           ← 다른 데이터베이스 선택
-        </button>
+        </Button>
       </div>
-    </div>
+    </CardContent>
   );
 
   const renderIssues = () => {
@@ -257,55 +273,73 @@ export function ColumnChecker({
         {/* 액션 버튼들 */}
         <div className="flex space-x-3">
           {canAutoFix ? (
-            <button
+            <Button
               onClick={handleAddColumns}
               disabled={processing}
-              className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              className="flex-1"
             >
-              {processing ? "컬럼 추가 중..." : "컬럼 자동 추가"}
-            </button>
+              {processing ? (
+                <>
+                  <ReloadIcon className="animate-spin h-4 w-4 mr-2" />
+                  컬럼 추가 중...
+                </>
+              ) : (
+                "컬럼 자동 추가"
+              )}
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={checkColumns}
               disabled={processing}
-              className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              className="flex-1"
             >
-              {processing ? "확인 중..." : "다시 확인"}
-            </button>
+              {processing ? (
+                <>
+                  <ReloadIcon className="animate-spin h-4 w-4 mr-2" />
+                  확인 중...
+                </>
+              ) : (
+                "다시 확인"
+              )}
+            </Button>
           )}
 
-          <a
-            href={`https://notion.so/${database.id.replace(/-/g, "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors text-center"
-          >
-            Notion에서 수정
-          </a>
+          <Button asChild variant="secondary" className="flex-1">
+            <a
+              href={`https://notion.so/${database.id.replace(/-/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Notion에서 수정
+            </a>
+          </Button>
         </div>
 
         <div className="mt-4 text-center">
-          <button
+          <Button
+            variant="ghost"
             onClick={onBack}
-            className="text-gray-500 hover:text-gray-700 text-sm"
+            className="text-gray-500 hover:text-gray-700"
           >
             ← 다른 데이터베이스 선택
-          </button>
+          </Button>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <Card className="max-w-2xl mx-auto border-none">
       {renderHeader()}
-      {renderDatabaseInfo()}
+      <CardContent>
+        {renderDatabaseInfo()}
 
-      {status === "loading" && renderLoading()}
-      {status === "error" && renderError()}
-      {status === "ready" && renderReady()}
-      {(status === "missing-columns" || status === "invalid-types") &&
-        renderIssues()}
-    </div>
+        {status === "loading" && renderLoading()}
+        {status === "error" && renderError()}
+        {status === "ready" && renderReady()}
+        {(status === "missing-columns" || status === "invalid-types") &&
+          renderIssues()}
+      </CardContent>
+    </Card>
   );
 }

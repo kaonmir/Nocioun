@@ -1,15 +1,15 @@
 import { Client } from "@notionhq/client";
 import { NotionDatabase, NotionProperty } from "@/types/notion";
-import { PlaceData } from "../../core/map/properties/columns";
+import { PlaceData } from "@/core/map/properties/columns";
 import {
   generateColumnProperties,
   validateColumnTypes as validateColumns,
   findMissingColumns,
-} from "../../core/map/properties/columns";
+} from "@/core/map/properties/columns";
 import {
   convertPlaceDataToNotionProperties,
   createNotionBlocks,
-} from "../../core/map/properties/place-converter";
+} from "@/core/map/properties/place-converter";
 
 export class NotionService {
   private client: Client;

@@ -26,7 +26,7 @@ const URL_PATTERN = /https?:\/\/[^\s]+/g;
 /** 각 호스트별 경로 패턴 */
 const PATH_PATTERNS = {
   "place.map.kakao.com": /^\/(\d+)\/?$/,
-  "kko.kakao.com": /^\/[a-zA-Z0-9]+\/?$/,
+  "kko.kakao.com": /^\/[a-zA-Z0-9_-]+\/?$/,
   "m.place.map.kakao.com": /^\/(\d+)\/?$/,
   "map.kakao.com": /^\//,
 } as const;
