@@ -348,7 +348,7 @@ export function FieldMappingCard({
   ]);
 
   return (
-    <Card className="mx-auto border-none">
+    <Card className="border-none shadow-none">
       <CardContent>
         {/* 필드 매핑 목록 */}
         <div className="space-y-4">
@@ -544,18 +544,11 @@ export function FieldMappingCard({
                                     })()}
                                   </div>
                                 )}
-                                {searchTerm &&
-                                  compatibleProperties.length === 0 && (
-                                    <div className="p-4 text-center text-sm text-gray-500">
-                                      Title 프로퍼티는 새로 생성할 수 없습니다.
-                                      <br />
-                                      기존 Title 프로퍼티를 선택해주세요.
-                                    </div>
-                                  )}
                                 {compatibleProperties.length === 0 &&
                                   !searchTerm && (
                                     <div className="p-4 text-center text-sm text-gray-500">
-                                      호환되는 프로퍼티가 없습니다.
+                                      호환되는 프로퍼티가 없습니다. 원하는
+                                      프로퍼티를 입력해 생성해주세요.
                                     </div>
                                   )}
                               </div>

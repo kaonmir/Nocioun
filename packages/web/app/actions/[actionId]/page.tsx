@@ -22,8 +22,9 @@ import {
   updateFieldMappings,
 } from "@/lib/actions";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
-import { MAP_ACTION_FIELDS } from "@/consts/actions";
-import { getDatabase } from "@/lib/notion";
+import { MAP_MAPPING_FIELDS } from "@/core";
+import { getNotionClient } from "@/lib/notion";
+import { LoadingCard } from "@/components/cards/LoadingCard";
 
 type Step = "database" | "mapping";
 
@@ -57,8 +58,11 @@ export default function EditMapActionPage({ params }: EditMapActionPageProps) {
 
         // 데이터베이스 정보 로드
         if (actionData.target_id) {
-          const databaseData = await getDatabase(actionData.target_id);
-          setSelectedDatabase(databaseData);
+          const notionClient = await getNotionClient();
+          const databaseData = await notionClient.databases.retrieve({
+            database_id: actionData.target_id,
+          });
+          setSelectedDatabase(databaseData as DatabaseObjectResponse);
 
           // 기존 필드 매핑을 CompletedFieldMapping 형태로 변환
           if (
@@ -66,9 +70,9 @@ export default function EditMapActionPage({ params }: EditMapActionPageProps) {
             actionData.field_mappings.length > 0
           ) {
             const mappings: CompletedFieldMapping[] = actionData.field_mappings
-              .filter((mapping) => mapping.notion_property_id)
-              .map((mapping) => {
-                const actionField = MAP_ACTION_FIELDS.find(
+              .filter((mapping: any) => mapping.notion_property_id)
+              .map((mapping: any) => {
+                const actionField = MAP_MAPPING_FIELDS.find(
                   (field) => field.key === mapping.action_field_key
                 );
 
@@ -215,47 +219,11 @@ export default function EditMapActionPage({ params }: EditMapActionPageProps) {
     }
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="text-center space-y-4">
-            <ReloadIcon className="animate-spin h-12 w-12 mx-auto text-blue-500" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                액션 정보를 불러오고 있습니다...
-              </h2>
-              <p className="text-gray-600">잠시만 기다려주세요.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (saving) {
-    return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="text-center space-y-4">
-            <ReloadIcon className="animate-spin h-12 w-12 mx-auto text-blue-500" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                액션을 저장하고 있습니다...
-              </h2>
-              <p className="text-gray-600">
-                잠시만 기다려주세요. 곧 액션 페이지로 이동합니다.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (loading) return <LoadingCard message="액션 정보를 불러오는 중..." />;
+  if (saving) return <LoadingCard message="액션을 저장하는 중..." />;
 
   return (
     <>
-      {/* 단계별 섹션 */}
       {/* 1단계: 데이터베이스 선택 */}
       <Card className="border-2 border-gray-200">
         <CardHeader>
@@ -326,7 +294,7 @@ export default function EditMapActionPage({ params }: EditMapActionPageProps) {
           <CardContent className="pt-0">
             <FieldMappingCard
               database={selectedDatabase}
-              actionFields={MAP_ACTION_FIELDS}
+              actionFields={[...MAP_MAPPING_FIELDS]}
               onMappingComplete={handleMappingComplete}
               initialMappings={fieldMappings}
             />

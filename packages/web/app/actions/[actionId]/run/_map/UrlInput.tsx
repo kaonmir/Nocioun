@@ -2,19 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReloadIcon, CheckIcon, ClipboardIcon } from "@radix-ui/react-icons";
 import { PlaceData, PlaceMapper } from "@/core";
 import { proxyFetchAsBrowser } from "@/lib/utils";
-import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface UrlInputProps {
   onUrlValidated: (url: string, validationData: PlaceData) => void;
@@ -25,15 +18,6 @@ export function UrlInput({ onUrlValidated, compact = false }: UrlInputProps) {
   const [url, setUrl] = useState("");
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string>("");
-  const { setPageMeta } = usePageMeta();
-
-  useEffect(() => {
-    setPageMeta({
-      title: "카카오맵 연동 액션",
-      description:
-        "카카오맵 장소 정보를 Notion 데이터베이스에 자동으로 저장하는 액션을 관리해보세요",
-    });
-  }, [setPageMeta]);
 
   const handleValidate = async () => {
     if (!url.trim()) {

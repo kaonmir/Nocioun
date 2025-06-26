@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { PageMeta } from "@/hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
 import { DatabaseSelectorDialog } from "@/components/notion/DatabaseSelectorDialog";
 import { FieldMappingCard } from "@/components/cards/FieldMappingCard";
@@ -20,13 +20,12 @@ import {
   activateAction,
 } from "@/lib/actions";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
-import { MAP_ACTION_FIELDS } from "@/consts/actions";
 import { LoadingCard } from "@/components/cards/LoadingCard";
+import { MAP_MAPPING_FIELDS } from "@/core";
 
 type Step = "database" | "mapping";
 
 export default function NewMapActionPage() {
-  const { setPageMeta } = usePageMeta();
   const router = useRouter();
   const [selectedDatabase, setSelectedDatabase] =
     useState<DatabaseObjectResponse | null>(null);
@@ -35,14 +34,6 @@ export default function NewMapActionPage() {
   );
   const [creating, setCreating] = useState(false);
   const [isDatabaseDialogOpen, setIsDatabaseDialogOpen] = useState(false);
-
-  // 페이지 메타데이터 설정
-  useEffect(() => {
-    setPageMeta({
-      title: "카카오맵 연동 설정",
-      description: "카카오맵에서 장소 정보를 가져올 설정을 진행해주세요",
-    });
-  }, [setPageMeta]);
 
   const handleDatabaseSelected = (database: DatabaseObjectResponse) => {
     setSelectedDatabase(database);
@@ -161,6 +152,11 @@ export default function NewMapActionPage() {
 
   return (
     <>
+      <PageMeta
+        title="카카오맵 연동 설정"
+        description="카카오맵에서 장소 정보를 가져올 설정을 진행해주세요"
+      />
+
       {/* 1단계: 데이터베이스 선택 */}
       <Card className="border-2 border-gray-200">
         <CardHeader>
@@ -228,10 +224,10 @@ export default function NewMapActionPage() {
           </div>
         </CardHeader>
         {selectedDatabase && (
-          <CardContent className="pt-0">
+          <CardContent>
             <FieldMappingCard
               database={selectedDatabase}
-              actionFields={MAP_ACTION_FIELDS}
+              actionFields={[...MAP_MAPPING_FIELDS]}
               onMappingComplete={handleMappingComplete}
             />
           </CardContent>

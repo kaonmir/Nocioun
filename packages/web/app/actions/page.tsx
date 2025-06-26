@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { PageMeta } from "@/hooks/usePageMeta";
 import {
   Card,
   CardContent,
@@ -44,12 +44,18 @@ import {
 import { createClient } from "@/lib/supabase";
 import { Action } from "@/types/action";
 import { getActions, deleteAction } from "@/lib/actions";
+import { getNotionClient } from "@/lib/notion";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { LoadingCard } from "@/components/cards/LoadingCard";
+import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
 
 export default function ActionsPage() {
-  const { setPageMeta } = usePageMeta();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actions, setActions] = useState<Action[]>([]);
+  const [actionMetadata, setActionMetadata] = useState<
+    Record<string, DatabaseObjectResponse>
+  >({});
   const [actionsLoading, setActionsLoading] = useState(false);
   const [actionsError, setActionsError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -57,14 +63,6 @@ export default function ActionsPage() {
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const supabase = createClient();
-
-  // 페이지 메타데이터 설정
-  useEffect(() => {
-    setPageMeta({
-      title: "액션 관리",
-      description: "생성된 액션들을 확인하고 관리해보세요",
-    });
-  }, [setPageMeta]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -88,7 +86,20 @@ export default function ActionsPage() {
       setActionsError(null);
 
       const actions = await getActions();
+
+      const notionClient = await getNotionClient();
+      const actionMetadata: Record<string, DatabaseObjectResponse> = {};
+      actions.forEach(async (action) => {
+        if (action.target_type === "database") {
+          const databaseData = (await notionClient.databases.retrieve({
+            database_id: action.target_id,
+          })) as DatabaseObjectResponse;
+          actionMetadata[action.id] = databaseData;
+        }
+      });
+
       setActions(actions);
+      setActionMetadata(actionMetadata);
     } catch (error) {
       console.error("Actions fetch error:", error);
       setActionsError(
@@ -101,11 +112,6 @@ export default function ActionsPage() {
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
   const handleDeleteAction = (action: Action) => {
     setActionToDelete(action);
     setDeleteDialogOpen(true);
@@ -116,7 +122,6 @@ export default function ActionsPage() {
 
     try {
       setDeleting(true);
-
       await deleteAction(actionToDelete.id);
 
       setActions((prev) =>
@@ -130,15 +135,6 @@ export default function ActionsPage() {
     } finally {
       setDeleting(false);
     }
-  };
-
-  const formatDate = (date: string) => {
-    const dateObj = new Date(date);
-    return dateObj.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   const getActionTypeLabel = (type: string) => {
@@ -180,19 +176,15 @@ export default function ActionsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-current border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingCard message="액션 목록을 불러오는 중..." />;
 
   return (
     <>
+      <PageMeta
+        title="액션 관리"
+        description="생성된 액션들을 확인하고 관리해보세요"
+      />
+
       {/* 빠른 액션 */}
       <Card>
         <CardHeader>
@@ -271,11 +263,13 @@ export default function ActionsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-semibold text-lg">
-                          {getActionTypeLabel(action.action_type)} -{" "}
-                          {action.target_type === "database"
-                            ? "Notion 데이터베이스"
-                            : "Notion 페이지"}
+                        <h3 className="font-semibold text-lg flex items-center">
+                          <DatabaseIcon
+                            className="w-5 h-5 mr-2 bg-white"
+                            icon={actionMetadata[action.id]?.icon}
+                          />
+                          {actionMetadata[action.id]?.title?.[0]?.plain_text}에{" "}
+                          {getActionTypeLabel(action.action_type)}
                         </h3>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(

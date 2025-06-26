@@ -1,38 +1,19 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { ReactNode } from "react";
 
-interface PageMeta {
+interface PageMetaProps {
   title: string;
   description: string;
+  children?: ReactNode;
 }
 
-interface PageMetaContextType {
-  pageMeta: PageMeta;
-  setPageMeta: (meta: PageMeta) => void;
-}
-
-const PageMetaContext = createContext<PageMetaContextType | undefined>(
-  undefined
-);
-
-export function PageMetaProvider({ children }: { children: ReactNode }) {
-  const [pageMeta, setPageMeta] = useState<PageMeta>({
-    title: "",
-    description: "",
-  });
-
+export function PageMeta({ title, description, children }: PageMetaProps) {
   return (
-    <PageMetaContext.Provider value={{ pageMeta, setPageMeta }}>
+    <div className="text-center mb-6">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
+      <p className="text-gray-600">{description}</p>
       {children}
-    </PageMetaContext.Provider>
+    </div>
   );
-}
-
-export function usePageMeta() {
-  const context = useContext(PageMetaContext);
-  if (context === undefined) {
-    throw new Error("usePageMeta must be used within a PageMetaProvider");
-  }
-  return context;
 }

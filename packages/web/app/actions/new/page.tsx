@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { PageMeta } from "@/hooks/usePageMeta";
 import {
   Card,
   CardContent,
@@ -72,90 +72,89 @@ const actions = [
 ];
 
 export default function ActionsNewPage() {
-  const { setPageMeta } = usePageMeta();
-
-  // 페이지 메타데이터 설정
-  useEffect(() => {
-    setPageMeta({
-      title: "새 액션 만들기",
-      description: "카카오맵과 Notion을 연동하는 새로운 액션을 만들어보세요",
-    });
-  }, [setPageMeta]);
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="space-y-8">
-        {/* 헤더 */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Actions 선택하기
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Notion과 연결할 기능을 선택하세요. 더 많은 기능이 곧 추가될
-            예정입니다.
-          </p>
-        </div>
+    <>
+      <PageMeta
+        title="새 액션 만들기"
+        description="카카오맵과 Notion을 연동하는 새로운 액션을 만들어보세요"
+      />
 
-        {/* Actions 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {actions.map((action) => {
-            const Icon = action.icon;
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* 헤더 */}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Actions 선택하기
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Notion과 연결할 기능을 선택하세요. 더 많은 기능이 곧 추가될
+              예정입니다.
+            </p>
+          </div>
 
-            if (action.available) {
+          {/* Actions 그리드 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {actions.map((action) => {
+              const Icon = action.icon;
+
+              if (action.available) {
+                return (
+                  <Link key={action.title} href={action.href}>
+                    <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+                      <CardHeader>
+                        <div
+                          className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                        >
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <CardTitle className="text-xl">
+                          {action.title}
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                          {action.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button className="w-full">시작하기</Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              }
+
               return (
-                <Link key={action.title} href={action.href}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-                    <CardHeader>
-                      <div
-                        className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                      >
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <CardTitle className="text-xl">{action.title}</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        {action.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button className="w-full">시작하기</Button>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <Card key={action.title} className="h-full opacity-60">
+                  <CardHeader>
+                    <div
+                      className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-4`}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <CardTitle className="text-xl">{action.title}</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      {action.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button disabled className="w-full">
+                      곧 출시 예정
+                    </Button>
+                  </CardContent>
+                </Card>
               );
-            }
+            })}
+          </div>
 
-            return (
-              <Card key={action.title} className="h-full opacity-60">
-                <CardHeader>
-                  <div
-                    className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-4`}
-                  >
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <CardTitle className="text-xl">{action.title}</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    {action.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button disabled className="w-full">
-                    곧 출시 예정
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* 뒤로 가기 */}
-        <div className="text-center">
-          <Link href="/actions">
-            <Button variant="outline" size="lg">
-              ← 뒤로 가기
-            </Button>
-          </Link>
+          {/* 뒤로 가기 */}
+          <div className="text-center">
+            <Link href="/actions">
+              <Button variant="outline" size="lg">
+                ← 뒤로 가기
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

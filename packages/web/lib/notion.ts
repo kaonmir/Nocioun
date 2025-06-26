@@ -30,16 +30,3 @@ export const getNotionClient = async () => {
     auth: notionAccessToken,
   });
 };
-
-/**
- * 특정 데이터베이스 정보를 가져옵니다.
- * @param databaseId 데이터베이스 ID
- * @returns Promise<DatabaseObjectResponse>
- */
-export const getDatabase = async (databaseId: string) => {
-  const notion = await getNotionClient();
-  const response = await notion.databases.retrieve({
-    database_id: databaseId,
-  });
-  return response;
-};
