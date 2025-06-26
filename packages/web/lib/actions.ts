@@ -236,3 +236,56 @@ export const deleteAction = async (actionId: string) => {
 
   return true;
 };
+
+export const updateFieldMappings = async (
+  actionId: string,
+  mappings: CreateFieldMappingRequest[]
+) => {
+  const supabase = createClient();
+  const { user } = await getAuthenticatedUser(supabase);
+
+  // action이 사용자 소유인지 확인
+  const { data: action, error: actionError } = await supabase
+    .from("actions")
+    .select("id")
+    .eq("id", actionId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (actionError || !action) {
+    throw new Error("액션을 찾을 수 없습니다.");
+  }
+
+  // 기존 필드 매핑 삭제
+  const { error: deleteError } = await supabase
+    .from("field_mappings")
+    .delete()
+    .eq("action_id", actionId);
+
+  if (deleteError) {
+    console.error("Field mappings delete error:", deleteError);
+    throw new Error("기존 필드 매핑 삭제에 실패했습니다.");
+  }
+
+  // 새로운 필드 매핑 추가
+  if (mappings.length > 0) {
+    const mappingRecords = mappings.map((mapping) => ({
+      action_id: actionId,
+      ...mapping,
+    }));
+
+    const { data, error: insertError } = await supabase
+      .from("field_mappings")
+      .insert(mappingRecords)
+      .select();
+
+    if (insertError) {
+      console.error("Field mappings insert error:", insertError);
+      throw new Error("필드 매핑 저장에 실패했습니다.");
+    }
+
+    return data;
+  }
+
+  return [];
+};

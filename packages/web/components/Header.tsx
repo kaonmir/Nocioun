@@ -69,13 +69,6 @@ export const Header = () => {
 
           {/* 네비게이션 및 사용자 메뉴 */}
           <div className="flex items-center space-x-4">
-            {/* 홈 버튼 */}
-            <Link href="/actions">
-              <Button variant="ghost" size="sm">
-                <HomeIcon className="w-4 h-4 mr-2" />홈
-              </Button>
-            </Link>
-
             {/* 사용자 메뉴 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -23,17 +23,19 @@ interface NotionProperty {
   type: string;
 }
 
-interface FieldMappingStepProps {
+interface FieldMappingCardProps {
   database: DatabaseObjectResponse;
   actionFields: CreateFieldMap[];
   onMappingComplete: (mappings: CompletedFieldMapping[]) => void;
+  initialMappings?: CompletedFieldMapping[];
 }
 
-export function FieldMappingStep({
+export function FieldMappingCard({
   database,
   actionFields,
   onMappingComplete,
-}: FieldMappingStepProps) {
+  initialMappings,
+}: FieldMappingCardProps) {
   const [notionProperties, setNotionProperties] = useState<NotionProperty[]>(
     []
   );
@@ -61,59 +63,92 @@ export function FieldMappingStep({
 
     setNotionProperties(properties);
 
-    // 초기 매핑 설정 - title을 제외하고 순서대로 기본 프로퍼티명 사용
-    const initialMappings: LocalFieldMapping[] = actionFields.map((field) => {
-      // title 타입은 항상 자동으로 첫 번째 title 프로퍼티와 매핑
-      if (field.propertyType === "title") {
-        const titleProperty = properties.find((prop) => prop.type === "title");
-        return {
-          actionFieldKey: field.key,
-          notionPropertyId: titleProperty?.id,
-          notionPropertyName: titleProperty?.name,
-          isNewProperty: false,
-          status: "auto_title",
-        };
-      }
+    // 초기 매핑 설정
+    let mappingsToSet: LocalFieldMapping[];
 
-      // 기본 프로퍼티명으로 기존 프로퍼티 찾기
-      const existingProperty = properties.find(
-        (prop) => prop.name === field.defaultPropertyName
-      );
+    if (initialMappings && initialMappings.length > 0) {
+      // initialMappings가 제공된 경우 기존 매핑을 복원
+      mappingsToSet = actionFields.map((field) => {
+        const existingMapping = initialMappings.find(
+          (mapping) => mapping.actionFieldKey === field.key
+        );
 
-      if (existingProperty) {
-        // 기존 프로퍼티가 있는 경우 타입 확인
-        if (existingProperty.type === field.propertyType) {
-          // 타입이 일치하는 경우
+        if (existingMapping) {
           return {
             actionFieldKey: field.key,
-            notionPropertyId: existingProperty.id,
-            notionPropertyName: existingProperty.name,
-            isNewProperty: false,
-            status: "existing",
+            notionPropertyId: existingMapping.notionPropertyId,
+            notionPropertyName: existingMapping.notionPropertyName,
+            isNewProperty: existingMapping.isNewProperty || false,
+            status: existingMapping.status || "existing",
           };
         } else {
-          // 타입이 일치하지 않는 경우 - 빈칸으로 표시
-          return {
-            actionFieldKey: field.key,
-            notionPropertyId: undefined,
-            notionPropertyName: undefined,
-            isNewProperty: false,
-          };
+          // 매핑이 없는 필드는 기본 설정 적용
+          return createDefaultMapping(field, properties);
         }
+      });
+    } else {
+      // 새로 생성하는 경우 기본 매핑 설정
+      mappingsToSet = actionFields.map((field) =>
+        createDefaultMapping(field, properties)
+      );
+    }
+
+    setMappings(mappingsToSet);
+  }, [database, actionFields, initialMappings]);
+
+  // 기본 매핑 생성 함수
+  const createDefaultMapping = (
+    field: any,
+    properties: NotionProperty[]
+  ): LocalFieldMapping => {
+    // title 타입은 항상 자동으로 첫 번째 title 프로퍼티와 매핑
+    if (field.propertyType === "title") {
+      const titleProperty = properties.find((prop) => prop.type === "title");
+      return {
+        actionFieldKey: field.key,
+        notionPropertyId: titleProperty?.id,
+        notionPropertyName: titleProperty?.name,
+        isNewProperty: false,
+        status: "auto_title",
+      };
+    }
+
+    // 기본 프로퍼티명으로 기존 프로퍼티 찾기
+    const existingProperty = properties.find(
+      (prop) => prop.name === field.defaultPropertyName
+    );
+
+    if (existingProperty) {
+      // 기존 프로퍼티가 있는 경우 타입 확인
+      if (existingProperty.type === field.propertyType) {
+        // 타입이 일치하는 경우
+        return {
+          actionFieldKey: field.key,
+          notionPropertyId: existingProperty.id,
+          notionPropertyName: existingProperty.name,
+          isNewProperty: false,
+          status: "existing",
+        };
       } else {
-        // 기존 프로퍼티가 없는 경우 - 신규 생성
+        // 타입이 일치하지 않는 경우 - 빈칸으로 표시
         return {
           actionFieldKey: field.key,
           notionPropertyId: undefined,
-          notionPropertyName: field.defaultPropertyName,
-          isNewProperty: true,
-          status: "new",
+          notionPropertyName: undefined,
+          isNewProperty: false,
         };
       }
-    });
-
-    setMappings(initialMappings);
-  }, [database, actionFields]);
+    } else {
+      // 기존 프로퍼티가 없는 경우 - 신규 생성
+      return {
+        actionFieldKey: field.key,
+        notionPropertyId: undefined,
+        notionPropertyName: field.defaultPropertyName,
+        isNewProperty: true,
+        status: "new",
+      };
+    }
+  };
 
   // 특정 액션 필드에 매핑 가능한 노션 프로퍼티 필터링
   const getCompatibleProperties = (actionFieldKey: string) => {

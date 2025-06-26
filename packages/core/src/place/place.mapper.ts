@@ -3,7 +3,7 @@ import { KakaoMapService } from "./place.service";
 import result from "../data/result.json";
 
 // 카카오맵 액션의 필드 정의
-const MAP_MAPPING_FIELDS = [
+export const MAP_MAPPING_FIELDS = [
   {
     key: "name",
     name: "장소명",

@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Card,
   CardContent,
@@ -70,6 +72,16 @@ const actions = [
 ];
 
 export default function ActionsNewPage() {
+  const { setPageMeta } = usePageMeta();
+
+  // 페이지 메타데이터 설정
+  useEffect(() => {
+    setPageMeta({
+      title: "새 액션 만들기",
+      description: "카카오맵과 Notion을 연동하는 새로운 액션을 만들어보세요",
+    });
+  }, [setPageMeta]);
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-8">

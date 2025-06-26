@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { DatabaseIcon } from "./DatabaseIcon";
+import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
 
 interface DatabaseSelectedCardProps {
   database: {

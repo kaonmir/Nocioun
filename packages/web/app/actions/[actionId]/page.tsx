@@ -3,50 +3,114 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { usePageMeta } from "@/hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
 import { DatabaseSelectorDialog } from "@/components/notion/DatabaseSelectorDialog";
 import { FieldMappingCard } from "@/components/cards/FieldMappingCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import { ReloadIcon, CheckIcon, PlusIcon } from "@radix-ui/react-icons";
+import { ReloadIcon, CheckIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
+
+import { Save } from "lucide-react";
 import {
   CompletedFieldMapping,
   CreateFieldMappingRequest,
+  Action,
 } from "@/types/action";
 import {
-  createAction,
-  createFieldMappings,
-  activateAction,
+  getActionById,
+  updateAction,
+  updateFieldMappings,
 } from "@/lib/actions";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
 import { MAP_ACTION_FIELDS } from "@/consts/actions";
-import { LoadingCard } from "@/components/cards/LoadingCard";
+import { getDatabase } from "@/lib/notion";
 
 type Step = "database" | "mapping";
 
-export default function NewMapActionPage() {
-  const { setPageMeta } = usePageMeta();
+interface EditMapActionPageProps {
+  params: {
+    actionId: string;
+  };
+}
+
+export default function EditMapActionPage({ params }: EditMapActionPageProps) {
   const router = useRouter();
+  const [action, setAction] = useState<Action | null>(null);
   const [selectedDatabase, setSelectedDatabase] =
     useState<DatabaseObjectResponse | null>(null);
   const [fieldMappings, setFieldMappings] = useState<CompletedFieldMapping[]>(
     []
   );
-  const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isDatabaseDialogOpen, setIsDatabaseDialogOpen] = useState(false);
 
-  // 페이지 메타데이터 설정
+  // 액션 데이터 로드
   useEffect(() => {
-    setPageMeta({
-      title: "카카오맵 연동 설정",
-      description: "카카오맵에서 장소 정보를 가져올 설정을 진행해주세요",
-    });
-  }, [setPageMeta]);
+    const loadActionData = async () => {
+      try {
+        setLoading(true);
+
+        // 액션 정보 로드
+        const actionData = await getActionById(params.actionId);
+        setAction(actionData);
+
+        // 데이터베이스 정보 로드
+        if (actionData.target_id) {
+          const databaseData = await getDatabase(actionData.target_id);
+          setSelectedDatabase(databaseData);
+
+          // 기존 필드 매핑을 CompletedFieldMapping 형태로 변환
+          if (
+            actionData.field_mappings &&
+            actionData.field_mappings.length > 0
+          ) {
+            const mappings: CompletedFieldMapping[] = actionData.field_mappings
+              .filter((mapping) => mapping.notion_property_id)
+              .map((mapping) => {
+                const actionField = MAP_ACTION_FIELDS.find(
+                  (field) => field.key === mapping.action_field_key
+                );
+
+                // 데이터베이스에서 해당 속성 찾기
+                const notionProperty = Object.entries(
+                  databaseData.properties
+                ).find(([id]) => id === mapping.notion_property_id);
+
+                return {
+                  actionFieldKey: mapping.action_field_key,
+                  actionFieldName:
+                    actionField?.name || mapping.action_field_key,
+                  actionFieldDescription: actionField?.description || "",
+                  notionPropertyId: mapping.notion_property_id,
+                  notionPropertyName: notionProperty?.[1]?.name || "",
+                  notionPropertyType: notionProperty?.[1]?.type || "",
+                  isNewProperty: false,
+                  status: "existing" as const,
+                };
+              });
+            setFieldMappings(mappings);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load action data:", error);
+        alert("액션 정보를 불러오는데 실패했습니다.");
+        router.push("/actions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.actionId) {
+      loadActionData();
+    }
+  }, [params.actionId, router]);
 
   const handleDatabaseSelected = (database: DatabaseObjectResponse) => {
     setSelectedDatabase(database);
     setIsDatabaseDialogOpen(false);
+    // 데이터베이스가 변경되면 기존 매핑 리셋
+    setFieldMappings([]);
   };
 
   const handleMappingComplete = useCallback(
@@ -56,44 +120,38 @@ export default function NewMapActionPage() {
     []
   );
 
-  const handleCreateAction = async () => {
-    if (!selectedDatabase || fieldMappings.length === 0) return;
+  const handleSaveAction = async () => {
+    if (!action || !selectedDatabase || fieldMappings.length === 0) return;
 
     try {
-      setCreating(true);
+      setSaving(true);
 
-      // 1. Action 생성 (draft 상태)
-      const action = await createAction({
+      // 1. 액션 업데이트
+      await updateAction(action.id, {
         name: `카카오맵 연동 - ${
           selectedDatabase.title?.[0]?.plain_text || selectedDatabase.id
         }`,
         description: "카카오맵 장소 정보를 Notion 데이터베이스에 저장하는 액션",
-        action_type: "map",
-        target_type: "database",
         target_id: selectedDatabase.id,
       });
 
-      // 2. Field Mappings 생성
+      // 2. 필드 매핑 업데이트
       const mappingRequests: CreateFieldMappingRequest[] = fieldMappings
-        .filter((mapping) => mapping.notionPropertyId) // notion property가 있는 것만
+        .filter((mapping) => mapping.notionPropertyId)
         .map((mapping) => ({
           action_field_key: mapping.actionFieldKey,
           notion_property_id: mapping.notionPropertyId!,
         }));
 
-      if (mappingRequests.length > 0) {
-        await createFieldMappings(action.id, mappingRequests);
-      }
+      await updateFieldMappings(action.id, mappingRequests);
 
-      // 3. Action 활성화
-      await activateAction(action.id);
-
+      alert("액션이 성공적으로 저장되었습니다.");
       router.push(`/actions`);
     } catch (error) {
-      console.error("Action creation failed:", error);
-      alert("액션 생성에 실패했습니다. 다시 시도해주세요.");
+      console.error("Action save failed:", error);
+      alert("액션 저장에 실패했습니다. 다시 시도해주세요.");
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
   };
 
@@ -157,10 +215,47 @@ export default function NewMapActionPage() {
     }
   };
 
-  if (creating) return <LoadingCard message="액션을 생성 중..." />;
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="text-center space-y-4">
+            <ReloadIcon className="animate-spin h-12 w-12 mx-auto text-blue-500" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                액션 정보를 불러오고 있습니다...
+              </h2>
+              <p className="text-gray-600">잠시만 기다려주세요.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (saving) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="text-center space-y-4">
+            <ReloadIcon className="animate-spin h-12 w-12 mx-auto text-blue-500" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                액션을 저장하고 있습니다...
+              </h2>
+              <p className="text-gray-600">
+                잠시만 기다려주세요. 곧 액션 페이지로 이동합니다.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
+      {/* 단계별 섹션 */}
       {/* 1단계: 데이터베이스 선택 */}
       <Card className="border-2 border-gray-200">
         <CardHeader>
@@ -233,37 +328,39 @@ export default function NewMapActionPage() {
               database={selectedDatabase}
               actionFields={MAP_ACTION_FIELDS}
               onMappingComplete={handleMappingComplete}
+              initialMappings={fieldMappings}
             />
           </CardContent>
         )}
       </Card>
 
-      {/* 액션 생성 버튼 */}
-      <div className="mt-4 text-center">
+      {/* 액션 저장 버튼 */}
+      <div className="mt-8 text-center">
         <Button
           size="lg"
-          onClick={handleCreateAction}
-          disabled={creating || !selectedDatabase || fieldMappings.length === 0}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-center"
+          onClick={handleSaveAction}
+          disabled={saving || !selectedDatabase || fieldMappings.length === 0}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
         >
-          {creating ? (
+          {saving ? (
             <>
               <ReloadIcon className="animate-spin mr-2 h-4 w-4" />
-              액션 생성 중...
+              저장 중...
             </>
           ) : (
             <>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              액션 생성하기
+              <Save className="mr-2 h-4 w-4" />
+              액션 저장하기
             </>
           )}
         </Button>
       </div>
 
       {/* 디버그 정보 (개발용) */}
-      {/* {process.env.NODE_ENV === "development" && (
+      {process.env.NODE_ENV === "development" && (
         <div className="mt-8 p-4 bg-gray-100 rounded-lg text-sm">
           <h3 className="font-semibold mb-2">Debug Info:</h3>
+          <p>Action ID: {action?.id}</p>
           <p>
             Selected DB: {selectedDatabase?.title?.[0]?.plain_text || "None"}
           </p>
@@ -272,8 +369,7 @@ export default function NewMapActionPage() {
             {JSON.stringify(fieldMappings, null, 2)}
           </pre>
         </div>
-      )} */}
-
+      )}
       {/* 데이터베이스 선택 다이얼로그 */}
       <DatabaseSelectorDialog
         open={isDatabaseDialogOpen}
