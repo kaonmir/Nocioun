@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
-import { CreateActionRequest } from "@/types/action";
+import {
+  CreateActionRequest,
+  CreateFieldMappingRequest,
+  FieldMapping,
+  Action,
+} from "@/types/action";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 const getAuthenticatedUser = async (supabase: SupabaseClient) => {
@@ -15,28 +20,19 @@ const getAuthenticatedUser = async (supabase: SupabaseClient) => {
   return { supabase, user };
 };
 
-export const createAction = async (actionData: CreateActionRequest) => {
+export const createAction = async (action: CreateActionRequest) => {
   const supabase = createClient();
   const { user } = await getAuthenticatedUser(supabase);
 
-  const { type, name, target_id, databaseId, config } = actionData;
-
-  // 입력 검증
-  if (!type || !databaseId || !config) {
+  if (!action.action_type) {
     throw new Error("필수 필드가 누락되었습니다.");
   }
 
   // 액션 데이터 구성
   const actionRecord = {
     user_id: user.id,
-    type,
-    status: "active",
-    properties: {
-      ...config,
-      databaseId,
-    },
-    ...(name && { name }),
-    ...(target_id && { target_id }),
+    status: "draft" as const, // 초기 상태는 draft
+    ...action,
   };
 
   // Supabase actions 테이블에 저장
@@ -49,6 +45,66 @@ export const createAction = async (actionData: CreateActionRequest) => {
   if (error) {
     console.error("Database insert error:", error);
     throw new Error("액션 저장에 실패했습니다.");
+  }
+
+  return data;
+};
+
+export const createFieldMappings = async (
+  actionId: string,
+  mappings: CreateFieldMappingRequest[]
+) => {
+  const supabase = createClient();
+  const { user } = await getAuthenticatedUser(supabase);
+
+  // action이 사용자 소유인지 확인
+  const { data: action, error: actionError } = await supabase
+    .from("actions")
+    .select("id")
+    .eq("id", actionId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (actionError || !action) {
+    throw new Error("액션을 찾을 수 없습니다.");
+  }
+
+  // field mappings 데이터 구성
+  const mappingRecords = mappings.map((mapping) => ({
+    action_id: actionId,
+    ...mapping,
+  }));
+
+  // field_mappings 테이블에 저장
+  const { data, error } = await supabase
+    .from("field_mappings")
+    .insert(mappingRecords)
+    .select();
+
+  if (error) {
+    console.error("Field mappings insert error:", error);
+    throw new Error("필드 매핑 저장에 실패했습니다.");
+  }
+
+  return data;
+};
+
+export const activateAction = async (actionId: string) => {
+  const supabase = createClient();
+  const { user } = await getAuthenticatedUser(supabase);
+
+  // 액션 상태를 active로 변경
+  const { data, error } = await supabase
+    .from("actions")
+    .update({ status: "active" })
+    .eq("id", actionId)
+    .eq("user_id", user.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Action activation error:", error);
+    throw new Error("액션 활성화에 실패했습니다.");
   }
 
   return data;
@@ -77,42 +133,76 @@ export const getActionById = async (actionId: string) => {
   const supabase = createClient();
   const { user } = await getAuthenticatedUser(supabase);
 
-  // 특정 액션 조회
-  const { data, error } = await supabase
+  // 특정 액션과 연관된 필드 매핑 조회
+  const { data: action, error: actionError } = await supabase
     .from("actions")
-    .select("*")
+    .select(
+      `
+      *,
+      field_mappings (*)
+    `
+    )
     .eq("id", actionId)
     .eq("user_id", user.id)
     .single();
 
-  if (error) {
-    console.error("Database fetch error:", error);
+  if (actionError) {
+    console.error("Database fetch error:", actionError);
     throw new Error("액션 조회에 실패했습니다.");
   }
 
-  return data;
+  return action;
+};
+
+export const getFieldMappingsByActionId = async (actionId: string) => {
+  const supabase = createClient();
+  const { user } = await getAuthenticatedUser(supabase);
+
+  // action이 사용자 소유인지 확인
+  const { data: action, error: actionError } = await supabase
+    .from("actions")
+    .select("id")
+    .eq("id", actionId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (actionError || !action) {
+    throw new Error("액션을 찾을 수 없습니다.");
+  }
+
+  // 필드 매핑 조회
+  const { data, error } = await supabase
+    .from("field_mappings")
+    .select("*")
+    .eq("action_id", actionId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Field mappings fetch error:", error);
+    throw new Error("필드 매핑 조회에 실패했습니다.");
+  }
+
+  return data || [];
 };
 
 export const updateAction = async (
   actionId: string,
-  updateData: { name?: string; config?: any; type?: string }
+  updateData: Partial<CreateActionRequest>
 ) => {
   const supabase = createClient();
   const { user } = await getAuthenticatedUser(supabase);
 
-  const { name, config, type } = updateData;
-
-  if (name && typeof name !== "string") {
-    throw new Error("액션 이름이 유효하지 않습니다.");
-  }
+  const { name, description, action_type, target_type, target_id } = updateData;
 
   // 액션 업데이트
   const { data, error } = await supabase
     .from("actions")
     .update({
       ...(name && { name }),
-      ...(config && { properties: config }),
-      ...(type && { type }),
+      ...(description && { description }),
+      ...(action_type && { action_type }),
+      ...(target_type && { target_type }),
+      ...(target_id && { target_id }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", actionId)
@@ -132,7 +222,7 @@ export const deleteAction = async (actionId: string) => {
   const supabase = createClient();
   const { user } = await getAuthenticatedUser(supabase);
 
-  // 액션 삭제
+  // 액션 삭제 (CASCADE로 field_mappings도 자동 삭제됨)
   const { error } = await supabase
     .from("actions")
     .delete()

@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@/components/ui/card";
 import { ArrowRightIcon } from "@radix-ui/react-icons";
 
 interface NotionOAuthProps {

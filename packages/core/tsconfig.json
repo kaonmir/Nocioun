@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
+    "moduleResolution": "node",
     "types": [
       "node",
       "jest"
@@ -16,6 +17,7 @@
     "dist",
     "**/*.test.ts",
     "**/__tests__/**",
+    "_contacts/**",
     "README.md",
     "package.json"
   ]

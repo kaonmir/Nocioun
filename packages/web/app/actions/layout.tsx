@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { Header } from "@/components/Header";
+import { UserProvider } from "@/hooks/useUser";
 
 export default function ActionsLayout({
   children,
@@ -11,5 +13,12 @@ export default function ActionsLayout({
     window.scrollTo(0, 0);
   }, []);
 
-  return <>{children}</>;
+  return (
+    <UserProvider>
+      <div className="min-h-screen bg-gray-50/30 max-w-7xl mx-auto">
+        <Header />
+        <main>{children}</main>
+      </div>
+    </UserProvider>
+  );
 }

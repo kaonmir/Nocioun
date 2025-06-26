@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,12 @@ import {
   MagnifyingGlassIcon,
   Cross2Icon,
 } from "@radix-ui/react-icons";
-import { FieldMapping, ActionField } from "@/types/action";
+import {
+  ActionField,
+  LocalFieldMapping,
+  CompletedFieldMapping,
+} from "@/types/action";
+import { CreateFieldMap } from "@/core";
 
 interface NotionProperty {
   id: string;
@@ -18,18 +23,10 @@ interface NotionProperty {
   type: string;
 }
 
-interface LocalFieldMapping {
-  actionFieldKey: string;
-  notionPropertyId?: string;
-  notionPropertyName?: string;
-  isNewProperty?: boolean;
-  status?: "existing" | "new" | "auto_title";
-}
-
 interface FieldMappingStepProps {
   database: DatabaseObjectResponse;
-  actionFields: ActionField[];
-  onMappingComplete: (mappings: FieldMapping[]) => void;
+  actionFields: CreateFieldMap[];
+  onMappingComplete: (mappings: CompletedFieldMapping[]) => void;
 }
 
 export function FieldMappingStep({
@@ -46,6 +43,7 @@ export function FieldMappingStep({
   const [activeDialogField, setActiveDialogField] = useState<string | null>(
     null
   );
+  const hasCompletedRef = useRef(false);
 
   // 데이터베이스의 프로퍼티 정보 가져오기
   useEffect(() => {
@@ -66,7 +64,7 @@ export function FieldMappingStep({
     // 초기 매핑 설정 - title을 제외하고 순서대로 기본 프로퍼티명 사용
     const initialMappings: LocalFieldMapping[] = actionFields.map((field) => {
       // title 타입은 항상 자동으로 첫 번째 title 프로퍼티와 매핑
-      if (field.notionPropertyType === "title") {
+      if (field.propertyType === "title") {
         const titleProperty = properties.find((prop) => prop.type === "title");
         return {
           actionFieldKey: field.key,
@@ -79,12 +77,12 @@ export function FieldMappingStep({
 
       // 기본 프로퍼티명으로 기존 프로퍼티 찾기
       const existingProperty = properties.find(
-        (prop) => prop.name === field.defaultNotionPropertyName
+        (prop) => prop.name === field.defaultPropertyName
       );
 
       if (existingProperty) {
         // 기존 프로퍼티가 있는 경우 타입 확인
-        if (existingProperty.type === field.notionPropertyType) {
+        if (existingProperty.type === field.propertyType) {
           // 타입이 일치하는 경우
           return {
             actionFieldKey: field.key,
@@ -107,7 +105,7 @@ export function FieldMappingStep({
         return {
           actionFieldKey: field.key,
           notionPropertyId: undefined,
-          notionPropertyName: field.defaultNotionPropertyName,
+          notionPropertyName: field.defaultPropertyName,
           isNewProperty: true,
           status: "new",
         };
@@ -123,7 +121,7 @@ export function FieldMappingStep({
     if (!actionField) return [];
 
     let compatible = notionProperties.filter(
-      (prop) => prop.type === actionField.notionPropertyType
+      (prop) => prop.type === actionField.propertyType
     );
 
     // 검색어로 필터링
@@ -215,75 +213,6 @@ export function FieldMappingStep({
     }
   };
 
-  // 완성된 매핑 정보를 생성하는 함수
-  const createFinalMappings = (): FieldMapping[] => {
-    return mappings.map((mapping) => {
-      const actionField = actionFields.find(
-        (f) => f.key === mapping.actionFieldKey
-      );
-
-      if (!actionField) {
-        throw new Error(`Action field not found: ${mapping.actionFieldKey}`);
-      }
-
-      return {
-        actionFieldKey: mapping.actionFieldKey,
-        actionFieldName: actionField.name,
-        actionFieldDescription: actionField.description,
-        notionPropertyId: mapping.notionPropertyId,
-        notionPropertyName: mapping.notionPropertyName,
-        notionPropertyType: actionField.notionPropertyType,
-        isNewProperty: mapping.isNewProperty || false,
-        status: mapping.status,
-      };
-    });
-  };
-
-  // 매핑 완료 처리
-  const handleComplete = async () => {
-    setProcessing(true);
-
-    try {
-      // 새로 생성할 프로퍼티들 확인
-      const newProperties = mappings.filter((mapping) => mapping.isNewProperty);
-
-      if (newProperties.length > 0) {
-        // 새 프로퍼티 생성 API 호출
-        const response = await fetch(
-          `/api/notion/databases/${database.id}/properties`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              properties: newProperties.map((mapping) => {
-                const actionField = actionFields.find(
-                  (f) => f.key === mapping.actionFieldKey
-                );
-                return {
-                  name: mapping.notionPropertyName,
-                  type: actionField?.notionPropertyType,
-                };
-              }),
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("프로퍼티 생성에 실패했습니다.");
-        }
-      }
-
-      // 완성된 매핑 정보 전달
-      const finalMappings = createFinalMappings();
-      onMappingComplete(finalMappings);
-    } catch (error) {
-      console.error("Field mapping error:", error);
-      alert("필드 매핑 처리 중 오류가 발생했습니다.");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
   // 모든 필드가 매핑되었는지 확인
   const isAllFieldsMapped = mappings.every(
     (mapping) => mapping.notionPropertyId || mapping.isNewProperty
@@ -291,13 +220,100 @@ export function FieldMappingStep({
 
   // 자동 완료 처리 - 모든 필드가 매핑되면 자동으로 완료 처리
   useEffect(() => {
-    if (isAllFieldsMapped && mappings.length > 0) {
-      handleComplete();
-    }
-  }, [isAllFieldsMapped, mappings.length]);
+    const handleComplete = async () => {
+      if (
+        !isAllFieldsMapped ||
+        mappings.length === 0 ||
+        processing ||
+        hasCompletedRef.current
+      ) {
+        return;
+      }
+
+      hasCompletedRef.current = true;
+      setProcessing(true);
+
+      try {
+        // 새로 생성할 프로퍼티들 확인
+        const newProperties = mappings.filter(
+          (mapping) => mapping.isNewProperty
+        );
+
+        if (newProperties.length > 0) {
+          // 새 프로퍼티 생성 API 호출
+          const response = await fetch(
+            `/api/notion/databases/${database.id}/properties`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                properties: newProperties.map((mapping) => {
+                  const actionField = actionFields.find(
+                    (f) => f.key === mapping.actionFieldKey
+                  );
+                  return {
+                    name: mapping.notionPropertyName,
+                    type: actionField?.propertyType,
+                  };
+                }),
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("프로퍼티 생성에 실패했습니다.");
+          }
+        }
+
+        // 완성된 매핑 정보를 생성
+        const finalMappings: CompletedFieldMapping[] = mappings.map(
+          (mapping) => {
+            const actionField = actionFields.find(
+              (f) => f.key === mapping.actionFieldKey
+            );
+
+            if (!actionField) {
+              throw new Error(
+                `Action field not found: ${mapping.actionFieldKey}`
+              );
+            }
+
+            return {
+              actionFieldKey: mapping.actionFieldKey,
+              actionFieldName: actionField.name,
+              actionFieldDescription: actionField.description,
+              notionPropertyId: mapping.notionPropertyId,
+              notionPropertyName: mapping.notionPropertyName,
+              notionPropertyType: actionField.propertyType,
+              isNewProperty: mapping.isNewProperty || false,
+              status: mapping.status,
+            };
+          }
+        );
+
+        // 완성된 매핑 정보 전달
+        onMappingComplete(finalMappings);
+      } catch (error) {
+        console.error("Field mapping error:", error);
+        alert("필드 매핑 처리 중 오류가 발생했습니다.");
+        hasCompletedRef.current = false; // 에러 시 다시 시도 가능하도록
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    handleComplete();
+  }, [
+    isAllFieldsMapped,
+    mappings,
+    processing,
+    database.id,
+    actionFields,
+    onMappingComplete,
+  ]);
 
   return (
-    <Card className="max-w-4xl mx-auto border-none">
+    <Card className="mx-auto border-none">
       <CardContent>
         {/* 필드 매핑 목록 */}
         <div className="space-y-4">
@@ -315,7 +331,7 @@ export function FieldMappingStep({
                 className={`${
                   !mapping?.notionPropertyId &&
                   !mapping?.isNewProperty &&
-                  actionField.notionPropertyType !== "title"
+                  actionField.propertyType !== "title"
                     ? "border-red-500"
                     : ""
                 }`}
@@ -328,7 +344,7 @@ export function FieldMappingStep({
                           {actionField.name}
                         </h4>
                         <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                          {actionField.notionPropertyType}
+                          {actionField.propertyType}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500">
@@ -336,7 +352,7 @@ export function FieldMappingStep({
                       </p>
                     </div>
                     <div className="flex-1 max-w-sm ml-4">
-                      {actionField.notionPropertyType === "title" ? (
+                      {actionField.propertyType === "title" ? (
                         // Title 프로퍼티는 비활성화된 상태로 표시
                         <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-between text-left">
                           <div className="flex items-center gap-2">
@@ -450,53 +466,50 @@ export function FieldMappingStep({
                                     })}
                                   </div>
                                 )}
-                                {searchTerm &&
-                                  actionField.notionPropertyType !==
-                                    "title" && (
-                                    <div className="p-2 border-t border-gray-100">
-                                      <div className="text-xs font-medium text-gray-500 mb-2 px-2">
-                                        새 프로퍼티
-                                      </div>
-                                      {(() => {
-                                        // 이미 존재하는 프로퍼티 이름과 중복되는지 확인
-                                        const isNameExists =
-                                          notionProperties.some(
-                                            (prop) =>
-                                              prop.name.toLowerCase() ===
-                                              searchTerm.toLowerCase()
-                                          );
-
-                                        if (isNameExists) {
-                                          return (
-                                            <div className="w-full px-3 py-2 text-left text-sm text-gray-500 rounded-md bg-gray-50 flex items-center">
-                                              <span>
-                                                &quot;{searchTerm}&quot; 이름이
-                                                이미 존재합니다
-                                              </span>
-                                            </div>
-                                          );
-                                        }
-
-                                        return (
-                                          <button
-                                            className="w-full px-3 py-2 text-left text-sm text-blue-600 rounded-md hover:bg-blue-50 flex items-center"
-                                            onClick={() =>
-                                              selectNewProperty(
-                                                actionField.key,
-                                                searchTerm
-                                              )
-                                            }
-                                          >
-                                            <span>
-                                              + &quot;{searchTerm}&quot; 생성
-                                            </span>
-                                          </button>
-                                        );
-                                      })()}
+                                {searchTerm && (
+                                  <div className="p-2 border-t border-gray-100">
+                                    <div className="text-xs font-medium text-gray-500 mb-2 px-2">
+                                      새 프로퍼티
                                     </div>
-                                  )}
+                                    {(() => {
+                                      // 이미 존재하는 프로퍼티 이름과 중복되는지 확인
+                                      const isNameExists =
+                                        notionProperties.some(
+                                          (prop) =>
+                                            prop.name.toLowerCase() ===
+                                            searchTerm.toLowerCase()
+                                        );
+
+                                      if (isNameExists) {
+                                        return (
+                                          <div className="w-full px-3 py-2 text-left text-sm text-gray-500 rounded-md bg-gray-50 flex items-center">
+                                            <span>
+                                              &quot;{searchTerm}&quot; 이름이
+                                              이미 존재합니다
+                                            </span>
+                                          </div>
+                                        );
+                                      }
+
+                                      return (
+                                        <button
+                                          className="w-full px-3 py-2 text-left text-sm text-blue-600 rounded-md hover:bg-blue-50 flex items-center"
+                                          onClick={() =>
+                                            selectNewProperty(
+                                              actionField.key,
+                                              searchTerm
+                                            )
+                                          }
+                                        >
+                                          <span>
+                                            + &quot;{searchTerm}&quot; 생성
+                                          </span>
+                                        </button>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
                                 {searchTerm &&
-                                  actionField.notionPropertyType === "title" &&
                                   compatibleProperties.length === 0 && (
                                     <div className="p-4 text-center text-sm text-gray-500">
                                       Title 프로퍼티는 새로 생성할 수 없습니다.
@@ -507,10 +520,7 @@ export function FieldMappingStep({
                                 {compatibleProperties.length === 0 &&
                                   !searchTerm && (
                                     <div className="p-4 text-center text-sm text-gray-500">
-                                      {actionField.notionPropertyType ===
-                                      "title"
-                                        ? "Title 프로퍼티가 없습니다. 데이터베이스에 Title 프로퍼티가 필요합니다."
-                                        : "호환되는 프로퍼티가 없습니다."}
+                                      호환되는 프로퍼티가 없습니다.
                                     </div>
                                   )}
                               </div>

@@ -42,7 +42,7 @@ import {
 } from "@radix-ui/react-icons";
 import { createClient } from "@/lib/supabase";
 import { Action } from "@/types/action";
-import { getActions } from "@/lib/actions";
+import { getActions, deleteAction } from "@/lib/actions";
 
 export default function ActionsPage() {
   const [user, setUser] = useState<any>(null);
@@ -107,16 +107,8 @@ export default function ActionsPage() {
     try {
       setDeleting(true);
 
-      const { error } = await supabase
-        .from("actions")
-        .delete()
-        .eq("id", actionToDelete.id);
+      await deleteAction(actionToDelete.id);
 
-      if (error) {
-        throw error;
-      }
-
-      // 성공적으로 삭제되면 액션 목록에서 제거
       setActions((prev) =>
         prev.filter((action) => action.id !== actionToDelete.id)
       );
@@ -124,14 +116,15 @@ export default function ActionsPage() {
       setActionToDelete(null);
     } catch (error) {
       console.error("Action delete error:", error);
-      // 에러 처리 - 필요시 toast나 alert로 사용자에게 알림
+      alert("액션 삭제에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setDeleting(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
+  const formatDate = (date: string) => {
+    const dateObj = new Date(date);
+    return dateObj.toLocaleDateString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -324,13 +317,6 @@ export default function ActionsPage() {
                             )}`}
                           >
                             {getStatusLabel(action.status)}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
-                          <span>
-                            생성일:{" "}
-                            {formatDate(action.created_at.toISOString())}
                           </span>
                         </div>
 

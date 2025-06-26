@@ -24,12 +24,8 @@
     },
     {
       "path": "./packages/cli"
-    },
-    {
-      "path": "./packages/n8n-nodes"
     }
   ],
-  "files": [],
   "include": [],
   "exclude": [
     "node_modules",

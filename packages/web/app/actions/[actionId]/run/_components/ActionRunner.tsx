@@ -7,18 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { getActionById } from "@/lib/actions";
+import { Action } from "@/types/action";
+import { PlaceData } from "@/core";
 
 type Step = "url" | "add";
-
-interface ActionData {
-  id: string;
-  type: string;
-  name: string;
-  databaseId: string;
-  config: {
-    database: NotionDatabase;
-  };
-}
 
 interface ActionRunnerProps {
   actionId: string;
@@ -26,15 +18,11 @@ interface ActionRunnerProps {
 
 export function ActionRunner({ actionId }: ActionRunnerProps) {
   const [currentStep, setCurrentStep] = useState<Step>("url");
-  const [actionData, setActionData] = useState<ActionData | null>(null);
+  const [actionData, setActionData] = useState<Action | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [validatedUrl, setValidatedUrl] = useState<string>("");
-  const [placeInfo, setPlaceInfo] = useState<any>(null);
-
-  useEffect(() => {
-    fetchActionData();
-  }, [actionId, fetchActionData]);
+  const [placeInfo, setPlaceInfo] = useState<PlaceData | null>(null);
 
   const fetchActionData = useCallback(async () => {
     try {
@@ -52,7 +40,15 @@ export function ActionRunner({ actionId }: ActionRunnerProps) {
     }
   }, [actionId]);
 
-  const handleUrlValidated = (url: string, placeInfo: any) => {
+  useEffect(() => {
+    fetchActionData();
+  }, [fetchActionData]);
+
+  const handleUrlValidated = (url: string, placeInfo: PlaceData) => {
+    if (!placeInfo) {
+      setError("유효하지 않은 장소 정보입니다. 다시 시도해주세요.");
+      return;
+    }
     setValidatedUrl(url);
     setPlaceInfo(placeInfo);
     setCurrentStep("add");
@@ -126,44 +122,34 @@ export function ActionRunner({ actionId }: ActionRunnerProps) {
         <div className="px-6 pt-6 pb-4">
           <div className="text-center mb-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {actionData.name}
+              {actionData.name || "액션"}
             </h1>
             <p className="text-gray-600">
-              {actionData.config.database.title}에 카카오맵 장소를 저장합니다
+              {actionData.description ||
+                "카카오맵 장소 정보를 Notion에 저장합니다"}
             </p>
-          </div>
-
-          {/* 진행 상태 표시 */}
-          <div className="flex flex-col gap-2">
-            <Progress
-              value={((getStepNumber(currentStep) + 1) / 2) * 100}
-              className="h-2"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>액션 실행</span>
-              <span>{getStepNumber(currentStep) + 1}/2 단계</span>
-            </div>
           </div>
         </div>
 
         {currentStep === "url" && (
-          <UrlInput
-            onUrlValidated={handleUrlValidated}
-            onBack={() => window.history.back()}
-          />
+          <UrlInput onUrlValidated={handleUrlValidated} />
         )}
 
-        {currentStep === "add" && validatedUrl && placeInfo && actionData && (
-          <AddToNotion
-            database={actionData.config.database}
-            url={validatedUrl}
-            placeInfo={placeInfo}
-            onPlaceAdded={handlePlaceAdded}
-            onBack={handleBackToUrl}
-            onAddMore={handleAddMore}
-            onChangeDatabase={() => window.history.back()}
-          />
-        )}
+        {currentStep === "add" &&
+          validatedUrl &&
+          placeInfo &&
+          actionData &&
+          placeInfo && (
+            <AddToNotion
+              actionId={actionId}
+              url={validatedUrl}
+              placeInfo={placeInfo}
+              onPlaceAdded={handlePlaceAdded}
+              onBack={handleBackToUrl}
+              onAddMore={handleAddMore}
+              onChangeDatabase={() => window.history.back()}
+            />
+          )}
       </div>
 
       {/* 디버그 정보 (개발용) */}
@@ -172,8 +158,11 @@ export function ActionRunner({ actionId }: ActionRunnerProps) {
           <h3 className="font-semibold mb-2">Debug Info:</h3>
           <p>Action ID: {actionId}</p>
           <p>Current Step: {currentStep}</p>
-          <p>Action Type: {actionData?.type}</p>
-          <p>Database: {actionData?.config.database.title}</p>
+          <p>Action Type: {actionData?.action_type}</p>
+          <p>Target Type: {actionData?.target_type}</p>
+          <p>Target ID: {actionData?.target_id}</p>
+          <p>Status: {actionData?.status}</p>
+          <p>Field Mappings: {actionData?.field_mappings?.length || 0}</p>
           <p>Validated URL: {validatedUrl || "None"}</p>
         </div>
       )}

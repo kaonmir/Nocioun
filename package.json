@@ -36,15 +36,9 @@
     "monorepo",
     "cli",
     "n8n",
-    "google-contacts",
     "notion"
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.14",
-    "@radix-ui/react-dropdown-menu": "^2.1.15",
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-tooltip": "^1.2.7"
-  }
+  "dependencies": {}
 }

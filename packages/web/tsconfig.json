@@ -27,8 +27,11 @@
       "@/*": [
         "./*"
       ],
+      "@/core": [
+        "../core/src"
+      ],
       "@/core/*": [
-        "../core/*"
+        "../core/src/*"
       ]
     }
   },
@@ -36,8 +39,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "../../.legacy/NotionOAuth.tsx"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

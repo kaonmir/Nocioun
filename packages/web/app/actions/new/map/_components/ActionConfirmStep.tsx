@@ -34,7 +34,7 @@ export function ActionConfirm({
   creating,
 }: ActionConfirmProps) {
   return (
-    <Card className="max-w-4xl mx-auto border-none">
+    <Card className="mx-auto border-none">
       <CardHeader className="text-center">
         <CardTitle>설정 확인</CardTitle>
         <CardDescription>

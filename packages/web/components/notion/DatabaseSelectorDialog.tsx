@@ -21,6 +21,7 @@ import {
   Cross2Icon,
   PlusIcon,
 } from "@radix-ui/react-icons";
+import { getNotionClient } from "@/lib/notion";
 
 interface DatabaseSelectorDialogProps {
   open: boolean;
@@ -50,14 +51,16 @@ export function DatabaseSelectorDialog({
       setLoading(true);
       setError("");
 
-      const response = await fetch(`/api/notion/databases?limit=${limit}`);
+      const notion = await getNotionClient();
+      const response = await notion.search({
+        filter: {
+          value: "database",
+          property: "object",
+        },
+        page_size: limit,
+      });
 
-      if (!response.ok) {
-        throw new Error("데이터베이스를 불러올 수 없습니다.");
-      }
-
-      const data = await response.json();
-      setDatabases(data || []);
+      setDatabases(response.results as DatabaseObjectResponse[]);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."

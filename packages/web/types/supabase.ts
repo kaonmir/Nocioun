@@ -11,42 +11,77 @@ export type Database = {
     Tables: {
       actions: {
         Row: {
-          created_at: string | null;
-          description: string | null;
           id: string;
-          name: string | null;
-          properties: Json | null;
-          status: string;
-          target_id: string | null;
-          type: string;
-          updated_at: string | null;
           user_id: string;
+          name: string | null;
+          description: string | null;
+          action_type: string;
+          target_type: string | null;
+          target_id: string | null;
+          status: string;
+          created_at: string | null;
+          updated_at: string | null;
         };
         Insert: {
-          created_at?: string | null;
-          description?: string | null;
           id?: string;
-          name?: string | null;
-          properties?: Json | null;
-          status?: string;
-          target_id?: string | null;
-          type: string;
-          updated_at?: string | null;
           user_id: string;
+          name?: string | null;
+          description?: string | null;
+          action_type: string;
+          target_type?: string | null;
+          target_id?: string | null;
+          status?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
         };
         Update: {
-          created_at?: string | null;
-          description?: string | null;
           id?: string;
-          name?: string | null;
-          properties?: Json | null;
-          status?: string;
-          target_id?: string | null;
-          type?: string;
-          updated_at?: string | null;
           user_id?: string;
+          name?: string | null;
+          description?: string | null;
+          action_type?: string;
+          target_type?: string | null;
+          target_id?: string | null;
+          status?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
         };
         Relationships: [];
+      };
+      field_mappings: {
+        Row: {
+          id: string;
+          action_id: string;
+          action_field_key: string;
+          notion_property_id: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          action_id: string;
+          action_field_key: string;
+          notion_property_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          action_id?: string;
+          action_field_key?: string;
+          notion_property_id?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "field_mappings_action_id_fkey";
+            columns: ["action_id"];
+            isOneToOne: false;
+            referencedRelation: "actions";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       jobs: {
         Row: {
