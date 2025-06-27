@@ -48,6 +48,7 @@ import { getNotionClient } from "@/lib/notion";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { LoadingCard } from "@/components/cards/LoadingCard";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
+import { DatabaseHeader } from "@/components/notion/DatabaseHeader";
 
 export default function ActionsPage() {
   const [user, setUser] = useState<any>(null);
@@ -89,14 +90,26 @@ export default function ActionsPage() {
 
       const notionClient = await getNotionClient();
       const actionMetadata: Record<string, DatabaseObjectResponse> = {};
-      actions.forEach(async (action) => {
-        if (action.target_type === "database") {
-          const databaseData = (await notionClient.databases.retrieve({
-            database_id: action.target_id,
-          })) as DatabaseObjectResponse;
-          actionMetadata[action.id] = databaseData;
-        }
-      });
+
+      // Promise.all을 사용하여 모든 비동기 작업이 완료될 때까지 기다림
+      await Promise.all(
+        actions.map(async (action) => {
+          if (action.target_type === "database") {
+            try {
+              const databaseData = (await notionClient.databases.retrieve({
+                database_id: action.target_id,
+              })) as DatabaseObjectResponse;
+              actionMetadata[action.id] = databaseData;
+            } catch (error) {
+              console.error(
+                `Database retrieve error for ${action.target_id}:`,
+                error
+              );
+              // 개별 데이터베이스 조회 실패 시에도 다른 액션들은 정상적으로 표시되도록 함
+            }
+          }
+        })
+      );
 
       setActions(actions);
       setActionMetadata(actionMetadata);
@@ -177,7 +190,6 @@ export default function ActionsPage() {
   };
 
   if (loading) return <LoadingCard message="액션 목록을 불러오는 중..." />;
-
   return (
     <>
       <PageMeta
@@ -188,7 +200,7 @@ export default function ActionsPage() {
       {/* 빠른 액션 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center ">
             <PlusIcon className="w-5 h-5 mr-2" />
             새로운 Action 만들기
           </CardTitle>
@@ -208,7 +220,8 @@ export default function ActionsPage() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
-              <TableIcon className="w-5 h-5 mr-2" />내 Actions
+              <TableIcon className="w-5 h-5 mr-2" />
+              <span>내 Actions</span>
             </div>
             <Button
               variant="outline"
@@ -264,12 +277,10 @@ export default function ActionsPage() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="font-semibold text-lg flex items-center">
-                          <DatabaseIcon
-                            className="w-5 h-5 mr-2 bg-white"
-                            icon={actionMetadata[action.id]?.icon}
+                          <DatabaseHeader
+                            database={actionMetadata[action.id]}
                           />
-                          {actionMetadata[action.id]?.title?.[0]?.plain_text}에{" "}
-                          {getActionTypeLabel(action.action_type)}
+                          에 {getActionTypeLabel(action.action_type)}
                         </h3>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(

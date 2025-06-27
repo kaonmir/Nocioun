@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DatabaseSelectedCard } from "@/components/notion/DatabaseSelectedCard";
+import { DatabaseSelectedCard } from "@/components/cards/DatabaseSelectedCard";
 
 // FieldMapping 타입 정의
 interface FieldMapping {

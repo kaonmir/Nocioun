@@ -32,7 +32,7 @@ export function DatabaseIcon({
 
   return (
     <div
-      className={`${sizeClasses[size]} bg-gray-100 rounded flex items-center justify-center ${className}`}
+      className={`${sizeClasses[size]} rounded flex items-center justify-center ${className}`}
     >
       {icon?.type === "external" ? (
         <Image
