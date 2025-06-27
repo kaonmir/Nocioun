@@ -7,6 +7,7 @@
     "build": "pnpm --filter=@nocioun/core build && pnpm -r build",
     "build:core": "pnpm --filter=@nocioun/core build",
     "build:cli": "pnpm --filter=@nocioun/core build && pnpm --filter=nocioun build",
+    "build:web": "pnpm --filter=@nocioun/core build && pnpm --filter=@nocioun/web build",
     "build:n8n": "pnpm --filter=@nocioun/core build && pnpm --filter=@nocioun/n8n-nodes-nocioun build",
     "test": "pnpm -r test",
     "test:core": "pnpm --filter=@nocioun/core test",
@@ -23,7 +24,8 @@
     "@types/node": "^20.8.0",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "next": "^14.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

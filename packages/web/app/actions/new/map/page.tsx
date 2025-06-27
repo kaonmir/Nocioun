@@ -21,7 +21,7 @@ import {
 } from "@/lib/actions";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
 import { LoadingCard } from "@/components/cards/LoadingCard";
-import { MAP_MAPPING_FIELDS } from "@/core";
+import { MAP_MAPPING_FIELDS } from "@nocioun/core";
 
 type Step = "database" | "mapping";
 

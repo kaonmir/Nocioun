@@ -15,7 +15,7 @@ import {
   LocalFieldMapping,
   CompletedFieldMapping,
 } from "@/types/action";
-import { CreateFieldMap } from "@/core";
+import { CreateFieldMap } from "@nocioun/core";
 
 interface NotionProperty {
   id: string;

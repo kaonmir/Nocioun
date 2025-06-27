@@ -22,7 +22,7 @@ import {
   updateFieldMappings,
 } from "@/lib/actions";
 import { DatabaseIcon } from "@/components/notion/DatabaseIcon";
-import { MAP_MAPPING_FIELDS } from "@/core";
+import { MAP_MAPPING_FIELDS } from "@nocioun/core";
 import { getNotionClient } from "@/lib/notion";
 import { LoadingCard } from "@/components/cards/LoadingCard";
 

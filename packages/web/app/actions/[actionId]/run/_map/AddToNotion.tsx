@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckIcon, ReloadIcon, ExternalLinkIcon } from "@radix-ui/react-icons";
 import { getActionById, getFieldMappingsByActionId } from "@/lib/actions";
 import { Action, FieldMapping } from "@/types/action";
-import { PlaceData, PlaceMapper } from "@/core";
+import { PlaceData, PlaceMapper } from "@nocioun/core";
 import { getNotionClient } from "@/lib/notion";
 import { Client } from "@notionhq/client";
 import { APIResponseError, APIErrorCode } from "@notionhq/client";

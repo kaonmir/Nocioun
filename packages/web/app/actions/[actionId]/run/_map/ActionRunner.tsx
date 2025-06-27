@@ -6,7 +6,7 @@ import { AddToNotion } from "./AddToNotion";
 import { Card, CardContent } from "@/components/ui/card";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { Action } from "@/types/action";
-import { PlaceData } from "@/core";
+import { PlaceData } from "@nocioun/core";
 import { ErrorCard } from "@/components/cards/ErrorCard";
 
 type Step = "url" | "add";

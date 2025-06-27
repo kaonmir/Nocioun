@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReloadIcon, CheckIcon, ClipboardIcon } from "@radix-ui/react-icons";
-import { PlaceData, PlaceMapper } from "@/core";
+import { PlaceData, PlaceMapper } from "@nocioun/core";
 import { proxyFetchAsBrowser } from "@/lib/utils";
 
 interface UrlInputProps {
